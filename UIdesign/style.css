@@ -1100,11 +1100,49 @@ body.state-ambient .glass-search-container {
 }
 
 .response-highlight-box {
-  background: rgba(248, 250, 252, 0.8);
-  border-left: 3px solid var(--accent-blue);
-  padding: 0.85rem 1.1rem;
-  margin: 0.85rem 0;
-  border-radius: 0 12px 12px 0;
+  background: #F8FAFD;
+  border-left: 4px solid var(--accent-blue);
+  padding: 1.1rem 1.4rem;
+  margin: 1.1rem 0;
+  border-radius: 0 14px 14px 0;
+  border-top: 1px solid #D1DFEA;
+  border-right: 1px solid #D1DFEA;
+  border-bottom: 1px solid #D1DFEA;
+  box-shadow: 0 2px 8px rgba(35, 101, 150, 0.04);
+}
+
+.response-highlight-box p {
+  font-size: 1.18rem !important;
+  line-height: 1.8 !important;
+  color: #0F2942 !important;
+  margin-bottom: 0.6rem;
+}
+
+.response-highlight-box p:last-child {
+  margin-bottom: 0;
+}
+
+.response-highlight-box p strong {
+  color: #0F2942;
+  font-weight: 700;
+  font-size: 1.18rem;
+}
+
+.response-highlight-box p em {
+  color: var(--accent-blue);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.response-highlight-box p code {
+  background: #E8F1F8;
+  color: #1A4F77;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 1.15rem;
+  font-family: monospace;
+  font-weight: 700;
 }
 
 /* ==========================================================================
@@ -1274,63 +1312,64 @@ body.state-active .liquid-textbox {
   background: #F8FAFD; 
 }
 .learner .body { 
-  font-size: 1.05rem; 
+  font-size: 1.2rem; 
   font-weight: 500;
   color: #0F2942;
-  margin-bottom: 8px;
-  line-height: 1.6;
+  margin-bottom: 10px;
+  line-height: 1.75;
 }
 .learner .example { 
-  margin-top: 8px; 
+  margin-top: 10px; 
   color: #334E68; 
-  font-size: 0.95rem;
+  font-size: 1.14rem;
+  line-height: 1.7;
 }
 .learner .prov { 
-  margin-top: 10px; 
+  margin-top: 12px; 
   color: #627D98; 
-  font-size: 0.8rem; 
+  font-size: 0.95rem; 
 }
 
 /* Cognate Derivation Path Cards (Light High Contrast) */
 .cognate-card-item {
-  padding: 12px 16px;
+  padding: 16px 20px;
   background: #FFFFFF;
   border: 1px solid #D1DFEA;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(35, 101, 150, 0.05);
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(35, 101, 150, 0.05);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .cognate-card-item:hover {
   border-color: var(--accent-blue);
-  box-shadow: 0 4px 12px rgba(35, 101, 150, 0.1);
+  box-shadow: 0 4px 14px rgba(35, 101, 150, 0.1);
 }
 .cognate-card-item .cognate-word {
   color: var(--accent-blue);
-  font-size: 1.12rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 .cognate-card-item .cognate-lang {
-  font-size: 0.82rem;
+  font-size: 1.02rem;
   color: #627D98;
-  margin-left: 6px;
+  margin-left: 8px;
   font-weight: 500;
 }
 .cognate-card-item .derivation-path {
-  font-size: 0.92rem;
-  color: #334E68;
-  margin-top: 5px;
-  line-height: 1.5;
+  font-size: 1.15rem;
+  color: #0F2942;
+  margin-top: 6px;
+  line-height: 1.7;
 }
 .cognate-card-item .note-badge {
   display: inline-block;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   color: #0E7490;
   background: #F0FDF4;
   border: 1px solid #BBF7D0;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* D3 Graph Container for Light Theme */
@@ -1368,12 +1407,12 @@ body.state-active .liquid-textbox {
 }
 
 .d3-btn {
-  padding: 5px 12px;
+  padding: 6px 14px;
   background: #FFFFFF;
   border: 1px solid #CBD5E1;
   border-radius: 6px;
   color: #236596;
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1386,15 +1425,15 @@ body.state-active .liquid-textbox {
 }
 
 .tree-breadcrumb {
-  padding: 8px 16px;
+  padding: 10px 18px;
   background: #FAFBFD;
   border-bottom: 1px dashed #E2E8F0;
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   color: #64748B;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .bc-item {
@@ -1409,12 +1448,12 @@ body.state-active .liquid-textbox {
 
 .bc-separator {
   color: #94A3B8;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 /* Selected Node Detail Card Below Tree */
 .selected-node-card {
-  padding: 16px 20px;
+  padding: 18px 24px;
   background: #F8FAFD;
   border-top: 1px solid #D1DFEA;
 }
@@ -1422,21 +1461,21 @@ body.state-active .liquid-textbox {
 .node-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
 .node-card-title {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #0F2942;
   margin: 0;
 }
 
 .node-card-badge {
-  font-size: 0.8rem;
-  padding: 2px 8px;
+  font-size: 0.95rem;
+  padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid #236596;
   color: #236596;
@@ -1445,23 +1484,24 @@ body.state-active .liquid-textbox {
 }
 
 .node-card-era {
-  font-size: 0.82rem;
-  color: #64748B;
+  font-size: 0.95rem;
+  color: #627D98;
   margin-left: auto;
 }
 
 .node-card-body {
-  font-size: 0.95rem;
-  color: #334E68;
-  line-height: 1.6;
+  font-size: 1.15rem;
+  color: #0F2942;
+  line-height: 1.75;
 }
 
 .node-card-tip {
-  margin-top: 8px;
-  font-size: 0.9rem;
+  margin-top: 10px;
+  font-size: 1.1rem;
+  line-height: 1.65;
   color: #236596;
   background: #F0F7FD;
   border: 1px solid #BAE6FD;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 8px;
 }

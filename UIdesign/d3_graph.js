@@ -296,10 +296,10 @@ function renderD3Graph(graphData) {
  * Updates the collapsible tree with smooth card rendering & bezier curves
  */
 function updateTree(source) {
-  const cardWidth = 210;
-  const cardHeight = 62;
-  const dx = 82; // vertical separation between sibling cards
-  const dy = 260; // horizontal separation between levels
+  const cardWidth = 230;
+  const cardHeight = 68;
+  const dx = 88; // vertical separation between sibling cards
+  const dy = 270; // horizontal separation between levels
 
   // Compute the new tree layout
   const treeLayout = d3.tree().nodeSize([dx, dy]);
@@ -403,7 +403,7 @@ function updateTree(source) {
     .attr("y", 4)
     .attr("text-anchor", "middle")
     .attr("font-family", "'Sarabun', 'Krub', sans-serif")
-    .attr("font-size", "10px")
+    .attr("font-size", "11px")
     .attr("font-weight", "700")
     .attr("fill", "#FFFFFF")
     .text(d => d.data.icon || "");
@@ -414,7 +414,7 @@ function updateTree(source) {
     .attr("x", 48)
     .attr("y", -8)
     .attr("font-family", "'Sarabun', 'Krub', sans-serif")
-    .attr("font-size", d => d.data.type === "pie_root" ? "14px" : "13px")
+    .attr("font-size", d => d.data.type === "pie_root" ? "14.5px" : "13.5px")
     .attr("font-weight", "700")
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).text)
     .text(d => {
@@ -426,9 +426,9 @@ function updateTree(source) {
   nodeEnter.append("text")
     .attr("class", "card-detail")
     .attr("x", 48)
-    .attr("y", 10)
+    .attr("y", 11)
     .attr("font-family", "'Sarabun', 'Krub', sans-serif")
-    .attr("font-size", "10px")
+    .attr("font-size", "11.5px")
     .attr("fill", "#334E68")
     .text(d => {
       const txt = d.data.detail || d.data.era || "";
@@ -439,9 +439,9 @@ function updateTree(source) {
   nodeEnter.append("text")
     .attr("class", "card-era")
     .attr("x", 48)
-    .attr("y", 22)
+    .attr("y", 24)
     .attr("font-family", "'Sarabun', 'Krub', sans-serif")
-    .attr("font-size", "9px")
+    .attr("font-size", "10.5px")
     .attr("fill", "#64748B")
     .text(d => d.data.era || "");
 

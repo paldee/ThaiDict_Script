@@ -802,42 +802,13 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `</div>`;
         
         if (entry.explanation) {
-          html += `<p style="margin-top: 0.8rem; line-height: 1.6;"><strong>คำอธิบายทางภาษาศาสตร์:</strong> ${escapeHtml(entry.explanation)}</p>`;
+          html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: #0F2942;"><strong>คำอธิบายทางภาษาศาสตร์:</strong> ${escapeHtml(entry.explanation)}</p>`;
         } else if (data.classification && data.classification.entry && data.classification.entry.sound_change_law) {
-           html += `<p style="margin-top: 0.8rem; line-height: 1.6;"><strong>การวิเคราะห์สัทศาสตร์เชิงประวัติศาสตร์:</strong> ${escapeHtml(data.classification.entry.sound_change_law)}</p>`;
+           html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: #0F2942;"><strong>การวิเคราะห์สัทศาสตร์เชิงประวัติศาสตร์:</strong> ${escapeHtml(data.classification.entry.sound_change_law)}</p>`;
         }
 
-        // Timeline Tracing
-        if (entry.timeline && entry.timeline.length > 0) {
-           html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">วิวัฒนาการคำ (Timeline)</h4>`;
-           html += `<div style="margin-top: 10px; padding-left: 15px; border-left: 2px solid var(--accent-blue);">`;
-           entry.timeline.forEach(t => {
-              html += `<div style="margin-bottom: 12px; position: relative;">`;
-              html += `<div style="position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></div>`;
-              html += `<strong style="color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(t.stage || '')} (${escapeHtml(t.era || '')})</strong><br>`;
-              html += `<span style="color: var(--accent-blue); font-family: monospace; font-size: 1.1rem; font-weight: 600;">${escapeHtml(t.form || '')}</span>`;
-              if (t.meaning) html += ` <span style="color: var(--text-secondary); font-size: 0.85rem;">— ${escapeHtml(t.meaning)}</span>`;
-              html += `</div>`;
-           });
-           html += `</div>`;
-        }
-
-        // Cognate Derivation Paths
-        if (entry.english_cognates && entry.english_cognates.length > 0 && typeof entry.english_cognates[0] === 'object') {
-           html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">เส้นทางคำร่วมเชื้อสาย (Derivation Paths)</h4>`;
-           html += `<ul style="list-style: none; padding: 0; margin-top: 10px;">`;
-           entry.english_cognates.forEach(c => {
-             html += `<li class="cognate-card-item">`;
-             html += `<strong class="cognate-word">${escapeHtml(c.word)}</strong> <span class="cognate-lang">(${escapeHtml(c.origin_language || '')})</span><br>`;
-             html += `<div class="derivation-path"><strong>เส้นทาง:</strong> ${escapeHtml(c.derivation_path || '')}</div>`;
-             if (c.usage_note) html += `<div class="note-badge"><strong>Note:</strong> ${escapeHtml(c.usage_note)}</div>`;
-             html += `</li>`;
-           });
-           html += `</ul>`;
-        }
-
-        // Add D3 Graph Container
-        html += `<h4 style="margin-top: 30px; color: var(--text-secondary); text-align: center;">แผนภาพรากศัพท์ (Etymology Tree)</h4>`;
+        // 1. แผนภาพรากศัพท์ (Etymology Tree) — ย้ายขึ้นมาก่อน Timeline ตามที่ผู้ใช้สั่ง
+        html += `<h4 style="margin-top: 28px; color: var(--text-secondary); text-align: center; font-size: 1.25rem;">แผนภาพรากศัพท์ (Etymology Tree)</h4>`;
         html += `<div class="d3-graph-wrapper">
                    <div class="d3-graph-toolbar">
                      <span class="d3-graph-tip">คลิกโหนดเพื่อขยาย/ย่อ หรือลากเพื่อเลื่อนมุมมอง</span>
@@ -861,6 +832,35 @@ document.addEventListener('DOMContentLoaded', () => {
                      <div id="nodeDetailTip" class="node-card-tip"></div>
                    </div>
                  </div>`;
+
+        // 2. วิวัฒนาการคำ (Timeline Tracing)
+        if (entry.timeline && entry.timeline.length > 0) {
+           html += `<h4 style="margin-top: 30px; color: var(--text-secondary); font-size: 1.25rem;">วิวัฒนาการคำ (Timeline)</h4>`;
+           html += `<div style="margin-top: 12px; padding-left: 18px; border-left: 2.5px solid var(--accent-blue);">`;
+           entry.timeline.forEach(t => {
+              html += `<div style="margin-bottom: 14px; position: relative;">`;
+              html += `<div style="position: absolute; left: -24px; top: 5px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent-blue);"></div>`;
+              html += `<strong style="color: var(--text-primary); font-size: 1.15rem;">${escapeHtml(t.stage || '')} (${escapeHtml(t.era || '')})</strong><br>`;
+              html += `<span style="color: var(--accent-blue); font-family: monospace; font-size: 1.25rem; font-weight: 700;">${escapeHtml(t.form || '')}</span>`;
+              if (t.meaning) html += ` <span style="color: #334E68; font-size: 1.1rem;">— ${escapeHtml(t.meaning)}</span>`;
+              html += `</div>`;
+           });
+           html += `</div>`;
+        }
+
+        // 3. เส้นทางคำร่วมเชื้อสาย (Cognate Derivation Paths)
+        if (entry.english_cognates && entry.english_cognates.length > 0 && typeof entry.english_cognates[0] === 'object') {
+           html += `<h4 style="margin-top: 30px; color: var(--text-secondary); font-size: 1.25rem;">เส้นทางคำร่วมเชื้อสาย (Derivation Paths)</h4>`;
+           html += `<ul style="list-style: none; padding: 0; margin-top: 12px;">`;
+           entry.english_cognates.forEach(c => {
+             html += `<li class="cognate-card-item">`;
+             html += `<strong class="cognate-word">${escapeHtml(c.word)}</strong> <span class="cognate-lang">(${escapeHtml(c.origin_language || '')})</span><br>`;
+             html += `<div class="derivation-path"><strong>เส้นทาง:</strong> ${escapeHtml(c.derivation_path || '')}</div>`;
+             if (c.usage_note) html += `<div class="note-badge"><strong>Note:</strong> ${escapeHtml(c.usage_note)}</div>`;
+             html += `</li>`;
+           });
+           html += `</ul>`;
+        }
 
       } else {
         html += `<div class="response-highlight-box" style="border-left-color: var(--accent-blue);">
