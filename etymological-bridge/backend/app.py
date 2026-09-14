@@ -120,6 +120,6 @@ if os.path.exists(FRONTEND_DIR):
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting Etymological Bridge API server at http://127.0.0.1:8088 ...")
-    uvicorn.run(app, host="127.0.0.1", port=8088)
+    print("Starting Etymological Bridge API server at http://127.0.0.1:8089 ...")
+    uvicorn.run(app, host="127.0.0.1", port=8089)
 
