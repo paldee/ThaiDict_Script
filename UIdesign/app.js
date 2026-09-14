@@ -438,9 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
       p.el.style.textShadow = isDark ? '0 0 25px rgba(56, 189, 248, 0.35)' : '0 1px 2px rgba(0, 0, 0, 0.15)';
     });
 
-    // 4. Trigger Sheen Pass and dock words into genuine DOM slots
+    // 4. Dock words into genuine DOM slots
     setTimeout(() => {
-      greetingHeadline.classList.add('sheen-active', 'is-docked');
+      greetingHeadline.classList.add('is-docked');
       // Reveal genuine slots in DOM flow so they scroll naturally
       document.querySelectorAll('.greeting-slot').forEach(slot => {
         slot.style.visibility = 'visible';
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset headline visibility and docked status
     greetingHeadline.style.opacity = '0';
-    greetingHeadline.classList.remove('sheen-active', 'is-docked');
+    greetingHeadline.classList.remove('is-docked');
     document.querySelectorAll('.greeting-slot').forEach(slot => {
       slot.style.visibility = 'hidden';
     });

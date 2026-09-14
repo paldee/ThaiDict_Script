@@ -531,34 +531,7 @@ body.theme-dark .moon-icon {
   visibility: hidden !important;
 }
 
-/* Luminous Sheen sweep passes over headline when locked */
-.greeting-headline::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.85) 50%, 
-    transparent 100%
-  );
-  pointer-events: none;
-  opacity: 0;
-}
 
-body.state-aligned .greeting-headline::after,
-body.state-active .greeting-headline::after {
-  animation: sheenPass 1.2s var(--ease-spring) 1;
-}
-
-@keyframes sheenPass {
-  0% { left: -60%; opacity: 0; }
-  30% { opacity: 0.95; }
-  100% { left: 140%; opacity: 0; }
-}
 
 .greeting-subtext {
   font-family: var(--font-ui);
