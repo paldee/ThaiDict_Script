@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สะพานรากศัพท์ (Etymological Bridge) | เชื่อมโยงคำไทยสู่ภาษาอังกฤษผ่าน PIE</title>
+  <meta name="description" content="ระบบเชื่อมโยงคำยืมบาลี-สันสกฤตในภาษาไทยสู่คำร่วมเชื้อสาย (Cognates) ในภาษาอังกฤษ ผ่านรากศัพท์ Proto-Indo-European (PIE) โดยสำนักงานราชบัณฑิตยสภา">
+  
+  <!-- Fonts: Outfit (English) & Prompt (Thai) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- D3.js v7 CDN for Force Graph -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Background Glow Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <!-- Header & Navigation -->
+  <header class="app-header" id="mainHeader">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M6 6h10"></path>
+            <path d="M6 10h10"></path>
+            <path d="M9 18l3-3 3 3"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span class="thai-brand">สะพานรากศัพท์</span>
+            <span class="eng-brand">Etymological Bridge</span>
+          </div>
+          <div class="brand-tagline">พจนานุกรมเพื่อการเรียนรู้แห่งอนาคต • สำนักงานราชบัณฑิตยสภา</div>
+        </div>
+      </div>
+
+      <!-- Stats Pill -->
+      <div class="header-stats" id="headerStats">
+        <span class="stat-pill"><strong id="statThaiCount">43</strong> คำสาธิตนำร่อง</span>
+        <span class="stat-pill"><strong id="statCognateCount">146</strong> คำร่วมเชื้อสายอังกฤษ</span>
+        <span class="stat-pill highlight"><strong id="statOrstCount">39,189</strong> คำทางการในคลัง</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" data-tab="tab-explorer" id="tabBtnExplorer">
+        <span class="tab-icon">🔍</span>
+        <span class="tab-label">สำรวจสายรากศัพท์ (Bridge Explorer)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-graph" id="tabBtnGraph">
+        <span class="tab-icon">🌐</span>
+        <span class="tab-label">ผังเครือญาติภาษาศาสตร์ (D3 Genea-Graph)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-timeline" id="tabBtnTimeline">
+        <span class="tab-icon">⏳</span>
+        <span class="tab-label">เส้นเวลากลุ่มเสียง & ความหมาย (Timeline)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-learn" id="tabBtnLearn">
+        <span class="tab-icon">🎓</span>
+        <span class="tab-label">เรียนอังกฤษจากคำไทย (Mnemonic Quiz)</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-categories" id="tabBtnCategories">
+        <span class="tab-icon">📚</span>
+        <span class="tab-label">คลังหมวดหมู่ (Categories)</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+    
+    <!-- Hero Search Section -->
+    <section class="hero-search-section">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          พลิกพจนานุกรมสู่ <span class="gradient-text">สะพานเชื่อมภาษาศาสตร์ระดับโลก</span>
+        </h1>
+        <p class="hero-desc">
+          ค้นหาคำยืมบาลี-สันสกฤตในภาษาไทยเพื่อสืบสาวสายวิวัฒนาการผ่าน <strong>Proto-Indo-European (PIE)</strong> 
+          ค้นพบคำร่วมเชื้อสาย (Cognates) ในภาษาอังกฤษที่คุณอาจไม่เคยรู้มาก่อนว่ามาจากบรรพบุรุษคำเดียวกัน
+        </p>
+
+        <!-- Search Box Container -->
+        <div class="search-box-wrapper">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="พิมพ์คำภาษาไทย (เช่น มารดา, ทันต, ศูนย์, วิทยา, สุนัข) หรือภาษาอังกฤษ..." autocomplete="off">
+            <button id="clearSearchBtn" class="clear-btn" style="display: none;">✕</button>
+            <button id="searchActionBtn" class="search-submit-btn">สำรวจรากศัพท์</button>
+          </div>
+          
+          <!-- Live Auto-Suggestions Dropdown -->
+          <div id="searchSuggestions" class="suggestions-dropdown" style="display: none;"></div>
+        </div>
+
+        <!-- Quick Wow Chips -->
+        <div class="quick-chips-group">
+          <span class="chips-label">คำสาธิตที่น่าประทับใจ (Wow Moments):</span>
+          <div class="chips-container" id="quickChips">
+            <button class="chip-btn" data-word="มารดา">มารดา ↔ mother / matrix</button>
+            <button class="chip-btn" data-word="ศูนย์">ศูนย์ ↔ zero / cave</button>
+            <button class="chip-btn" data-word="ทันต">ทันต ↔ dental / dandelion</button>
+            <button class="chip-btn" data-word="วิทยา">วิทยา ↔ video / wise / idea</button>
+            <button class="chip-btn" data-word="บิดา">บิดา ↔ father / patriot</button>
+            <button class="chip-btn" data-word="สุนัข">สุนัข ↔ hound / canine / cynic</button>
+            <button class="chip-btn" data-word="มนุษย์">มนุษย์ ↔ man / mankind</button>
+            <button class="chip-btn" data-word="ราชา">ราชา ↔ royal / right / rich</button>
+          </div>
+        </div>
+
+        <!-- Word Classification Banner (Shows Kra-Dai vs Sanskrit result) -->
+        <div id="classificationBanner" class="classification-banner" style="display: none;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: BRIDGE EXPLORER -->
+    <section id="tab-explorer" class="tab-pane active">
+      <div class="explorer-grid">
+        
+        <!-- Current Word Header Bar -->
+        <div class="word-hero-card" id="wordHeroCard">
+          <div class="word-hero-left">
+            <div class="word-badge-row">
+              <span class="badge category-badge" id="entryCategory">ครอบครัวและเครือญาติ</span>
+              <span class="badge origin-badge" id="entryOriginLang">Sanskrit / Pali</span>
+              <span class="badge orst-verified-badge">✓ มาตรฐานราชบัณฑิตยสภา</span>
+            </div>
+            <div class="word-title-row">
+              <h2 class="active-thai-word" id="entryThaiWord">มารดา</h2>
+              <span class="active-phonetic" id="entryThaiRead">[มาน-ดา]</span>
+              <span class="active-pos" id="entryThaiPos">น.</span>
+            </div>
+            <div class="official-def-quote">
+              <span class="quote-tag">นิยามทางการ (ORST):</span>
+              <p class="quote-text" id="entryOrstDefinition">แม่, มักใช้เป็นทางการ เช่น มารดาผู้ให้กำเนิด (ส. mātṛ; ป. mātā)</p>
+              <div class="edition-tag" id="entryOrstEdition">พจนานุกรม ฉบับราชบัณฑิตยสถาน พ.ศ. ๒๕๔๒ / ๒๕๕๔</div>
+            </div>
+          </div>
+
+          <div class="word-hero-right">
+            <div class="pie-root-box">
+              <div class="pie-title">รากบรรพบุรุษร่วม (PIE Root)</div>
+              <div class="pie-root-code" id="entryPieRoot">*méh₂tēr</div>
+              <div class="pie-meaning-label" id="entryPieMeaning">ความหมายดั้งเดิม: "mother" (~4,500 ปีก่อนคริสตกาล)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-Tier Interactive Evolution Flow -->
+        <div class="etymology-flow-wrapper">
+          <div class="section-badge-title">
+            <span class="section-num">01</span>
+            <span class="section-name">เส้นทางการถ่ายทอดทางภาษาศาสตร์ (The 4-Tier Etymological Bridge)</span>
+          </div>
+
+          <div class="four-tier-flow" id="fourTierFlow">
+            <!-- Tier 1: Thai Word -->
+            <div class="flow-card tier-thai">
+              <div class="tier-header">
+                <span class="tier-flag">🇹🇭</span>
+                <span class="tier-lang">ภาษาไทย (Thai)</span>
+              </div>
+              <div class="tier-main-word" id="flowThaiWord">มารดา</div>
+              <div class="tier-detail">
+                <div class="tier-sub" id="flowThaiDetail">คำยืมสู่ภาษาไทยระดับทางการ/ราชาศัพท์</div>
+                <div class="tier-era">ยุคสุโขทัย (~คริสต์ศตวรรษที่ 14) - ปัจจุบัน</div>
+              </div>
+              <div class="tier-connector-arrow">➔</div>
+            </div>
+
+            <!-- Tier 2: Sanskrit/Pali -->
+            <div class="flow-card tier-indic">
+              <div class="tier-header">
+                <span class="tier-flag">🇮🇳</span>
+                <span class="tier-lang">สันสกฤต / บาลี (Indic)</span>
+              </div>
+              <div class="tier-main-word" id="flowSanskritWord">mātṛ (मातृ)</div>
+              <div class="tier-detail">
+                <div class="tier-sub" id="flowSanskritMeaning">รากศัพท์ดั้งเดิม: "แม่, ผู้ให้กำเนิด"</div>
+                <div class="tier-era">ยุคพระเวท (~1500 BCE) / ยุคพุทธกาล (~500 BCE)</div>
+              </div>
+              <div class="tier-connector-arrow">➔</div>
+            </div>
+
+            <!-- Tier 3: PIE Root -->
+            <div class="flow-card tier-pie">
+              <div class="tier-header">
+                <span class="tier-flag">🌐</span>
+                <span class="tier-lang">Proto-Indo-European (PIE)</span>
+              </div>
+              <div class="tier-main-word highlight-gold" id="flowPieRoot">*méh₂tēr</div>
+              <div class="tier-detail">
+                <div class="tier-sub" id="flowPieMeaning">รากเหง้าภาษาโบราณแถบทุ่งสเตปป์ยูเรเซีย</div>
+                <div class="tier-era">ยุคหินใหม่ (~4500-2500 ปีก่อนคริสตกาล)</div>
+              </div>
+              <div class="tier-connector-arrow">➔</div>
+            </div>
+
+            <!-- Tier 4: English Cognates -->
+            <div class="flow-card tier-english">
+              <div class="tier-header">
+                <span class="tier-flag">🇬🇧</span>
+                <span class="tier-lang">ภาษาอังกฤษ (English Cognates)</span>
+              </div>
+              <div class="tier-cognates-summary" id="flowEnglishList">
+                <span class="cog-pill">mother</span>
+                <span class="cog-pill">maternal</span>
+                <span class="cog-pill">matriarch</span>
+                <span class="cog-pill">matrix</span>
+              </div>
+              <div class="tier-detail">
+                <div class="tier-sub">สืบทอดผ่านสายเจอร์แมนิก, ละติน, และกรีก</div>
+                <div class="tier-era">Old English (~คริสต์ศตวรรษที่ 5) - ปัจจุบัน</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phonological Law & Semantic Drift Callout -->
+        <div class="linguistic-laws-grid">
+          <div class="law-card">
+            <div class="law-header">
+              <span class="law-icon">📜</span>
+              <span class="law-title">กฎการเปลี่ยนเสียงทางภาษาศาสตร์ (Phonological Sound Law)</span>
+            </div>
+            <p class="law-desc" id="entrySoundLaw">
+              Grimm's Law / Voiceless Stop Preservation: ราก PIE *m- มีความคงตัวสูงมากในทุกสายวิวัฒนาการ
+            </p>
+          </div>
+
+          <div class="law-card">
+            <div class="law-header">
+              <span class="law-icon">🌊</span>
+              <span class="law-title">การกลายความหมาย (Semantic Drift)</span>
+              <span class="drift-score-badge" id="entryDriftScore">None</span>
+            </div>
+            <p class="law-desc" id="entryDriftNote">
+              ความหมายคงเดิมตลอด 6,000 ปี ในทุกตระกูลภาษาลูกหลาน
+            </p>
+          </div>
+        </div>
+
+        <!-- Detailed English Cognates Gallery -->
+        <div class="cognates-section">
+          <div class="section-badge-title">
+            <span class="section-num">02</span>
+            <span class="section-name">คลังคำศัพท์ภาษาอังกฤษร่วมสายตระกูล (English Cognates Deep Dive)</span>
+          </div>
+
+          <div class="cognates-cards-grid" id="cognatesGrid">
+            <!-- Dynamically populated cards -->
+          </div>
+        </div>
+
+        <!-- Specialized Domain Terminology (ORST Dictionary Alignment) -->
+        <div class="specialized-section" id="specializedSection" style="display: none;">
+          <div class="section-badge-title">
+            <span class="section-num">03</span>
+            <span class="section-name">การใช้งานในพจนานุกรมเฉพาะสาขาวิชาของราชบัณฑิตยสภา</span>
+          </div>
+          <div class="specialized-terms-grid" id="specializedTermsGrid">
+            <!-- Dynamically populated from Medical/Psychology/Philosophy dictionaries -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: D3 GENEALOGICAL GRAPH -->
+    <section id="tab-graph" class="tab-pane">
+      <div class="graph-container-card">
+        <div class="graph-toolbar">
+          <div class="graph-info">
+            <h3 class="graph-title" id="graphTitle">ผังเครือญาติภาษาศาสตร์ของคำว่า "มารดา"</h3>
+            <span class="graph-subtitle">แผนภาพ D3 Force-Directed แสดงการแยกสาย Satem (อินเดีย/ไทย) vs Centum (ยุโรป/อังกฤษ)</span>
+          </div>
+          <div class="graph-controls">
+            <button class="graph-btn" id="graphResetZoomBtn">🔍 รีเซ็ตมุมมอง</button>
+            <button class="graph-btn" id="graphTogglePhysicsBtn">⏸ หยุดฟิสิกส์</button>
+          </div>
+        </div>
+
+        <!-- Legend Bar -->
+        <div class="graph-legend">
+          <div class="legend-item"><span class="legend-dot dot-pie"></span> รากศัพท์แม่ PIE (*Root)</div>
+          <div class="legend-item"><span class="legend-dot dot-branch"></span> สาขาตระกูลภาษา (Branch)</div>
+          <div class="legend-item"><span class="legend-dot dot-sanskrit"></span> ภาษาสันสกฤต/บาลี (Indic)</div>
+          <div class="legend-item"><span class="legend-dot dot-thai"></span> คำในภาษาไทย (Thai Word)</div>
+          <div class="legend-item"><span class="legend-dot dot-english"></span> คำภาษาอังกฤษ (English Cognate)</div>
+        </div>
+
+        <!-- D3 SVG Container -->
+        <div class="d3-viewport-wrapper">
+          <svg id="d3GraphSvg" width="100%" height="560"></svg>
+          
+          <!-- Node Detail Tooltip Card -->
+          <div id="graphTooltip" class="graph-tooltip" style="display: none;">
+            <div class="tooltip-title" id="tooltipTitle">Node</div>
+            <div class="tooltip-era" id="tooltipEra">Era</div>
+            <div class="tooltip-body" id="tooltipBody">Details</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: TIMELINE & CHRONOLOGY -->
+    <section id="tab-timeline" class="tab-pane">
+      <div class="timeline-container-card">
+        <div class="section-badge-title">
+          <span class="section-num">04</span>
+          <span class="section-name">ลำดับกาลเวลาและการเปลี่ยนแปลงทางสัทศาสตร์ (Chronological Journey)</span>
+        </div>
+        <p class="timeline-intro">
+          เส้นทางการเดินทางกว่า 6,000 ปี จากทุ่งหญ้าสเตปป์ยูเรเซียโบราณ สู่คัมภีร์พระเวทในลุ่มน้ำสินธุ ผ่านพระไตรปิฎกบาลี สู่พจนานุกรมไทย และภาษาอังกฤษสากล
+        </p>
+
+        <div class="timeline-track" id="timelineTrack">
+          <!-- Dynamically populated timeline nodes -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LEARN ENGLISH VIA THAI (MNEMONIC QUIZ) -->
+    <section id="tab-learn" class="tab-pane">
+      <div class="learn-container-card">
+        <div class="learn-hero-header">
+          <div class="learn-badge">🎯 ฟังก์ชันช่วยเรียนรู้ภาษา (Educational Innovation)</div>
+          <h2 class="learn-title">เทคนิคจำศัพท์ภาษาอังกฤษขั้นสูง... จากคำไทยที่คุณรู้จักอยู่แล้ว!</h2>
+          <p class="learn-subtitle">
+            ทำไมต้องท่องจำศัพท์อังกฤษแบบนกแก้วนกขุนทอง? เมื่อหลักภาษาศาสตร์เชิงประวัติศาสตร์ชี้ชัดว่า 
+            คนไทยจำคำอย่าง <em>maternal</em>, <em>dental</em>, <em>video</em>, <em>zero</em>, <em>dandelion</em> 
+            ได้ง่ายดายเพียงเชื่อมโยงกับคำบาลี-สันสกฤตในชีวิตประจำวัน!
+          </p>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-wrapper" id="quizWrapper">
+          <div class="quiz-header-bar">
+            <span class="quiz-progress-label" id="quizProgressLabel">คำถามข้อที่ 1 / 5</span>
+            <span class="quiz-score-badge">คะแนน: <strong id="quizScoreText">0</strong></span>
+          </div>
+
+          <div class="quiz-card" id="quizCard">
+            <div class="quiz-question-box">
+              <div class="quiz-prompt-tag">ทดสอบความเข้าใจ</div>
+              <h3 class="quiz-question-text" id="quizQuestionText">คำถามกำลังโหลด...</h3>
+              <div class="quiz-sub-hint" id="quizSubHint">คำบอกใบ้: มาจากราก *méh₂tēr</div>
+            </div>
+
+            <div class="quiz-options-grid" id="quizOptionsGrid">
+              <!-- Options buttons -->
+            </div>
+
+            <div class="quiz-feedback-box" id="quizFeedbackBox" style="display: none;">
+              <div class="feedback-status" id="feedbackStatus">ถูกต้อง! 🎉</div>
+              <p class="feedback-explanation" id="feedbackExplanation">คำอธิบาย</p>
+              <button class="quiz-next-btn" id="quizNextBtn">คำถามถัดไป ➔</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quiz Completed Score Screen -->
+        <div class="quiz-complete-card" id="quizCompleteCard" style="display: none;">
+          <div class="trophy-icon">🏆</div>
+          <h3 class="complete-title">ยินดีด้วย! คุณทำแบบทดสอบเสร็จสิ้น</h3>
+          <p class="complete-score-summary">คุณได้คะแนน <span id="finalScore">5</span> เต็ม 5</p>
+          <p class="complete-praise" id="completePraise">ยอดเยี่ยมมาก! คุณได้เปิดโลกการเรียนรู้ภาษาอังกฤษผ่านสะพานรากศัพท์ไทย</p>
+          <button class="restart-quiz-btn" id="restartQuizBtn">ทำแบบทดสอบใหม่อีกครั้ง</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: CATEGORIES DIRECTORY -->
+    <section id="tab-categories" class="tab-pane">
+      <div class="categories-container-card">
+        <div class="section-badge-title">
+          <span class="section-num">05</span>
+          <span class="section-name">สำรวจคำศัพท์ตามหมวดหมู่อรรถศาสตร์ (Semantic Domains)</span>
+        </div>
+        
+        <div class="category-filters-row" id="categoryPillFilters">
+          <button class="cat-pill active" data-cat="ALL">ทั้งหมด (All Words)</button>
+          <!-- Category buttons dynamically populated -->
+        </div>
+
+        <div class="words-catalogue-grid" id="catalogueGrid">
+          <!-- Dynamically populated cards -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="footer-title">สะพานรากศัพท์ (Etymological Bridge)</div>
+        <div class="footer-desc">
+          ผลงานต้นแบบพัฒนาสำหรับโครงการประกวด <strong>"เปิดคลังคำ พลิกคลังคิด" (Dictionary Reimagined)</strong><br>
+          สำนักงานราชบัณฑิตยสภา • อ้างอิงหลักภาษาศาสตร์เชิงประวัติศาสตร์ Indo-European Historical Linguistics
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="source-credit">
+          <strong>แหล่งข้อมูลทางการ:</strong> พจนานุกรม ฉบับราชบัณฑิตยสถาน พ.ศ. ๒๕๔๒ / ๒๕๕๔, ศัพท์แพทย์, ศัพท์ปรัชญา, ศัพท์จิตวิทยา
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/d3_graph.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
