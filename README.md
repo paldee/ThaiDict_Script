@@ -1,26 +1,25 @@
 # สะพานรากศัพท์ (Etymological Bridge) 🌉
-### โครงการสำหรับการแข่งขัน "เปิดคลังคำ พลิกคลังคิด" (Dictionary Reimagined Hackathon)
-**จัดโดย: สำนักงานราชบัณฑิตยสภา (Office of the Royal Society of Thailand - ORST)**
+### ระบบเชื่อมโยงคำยืมบาลี-สันสกฤตในภาษาไทย ↔ Cognates ภาษาอังกฤษ ผ่าน Proto-Indo-European (PIE)
 
 ---
 
-## 📖 ภาพรวมโครงการ (Project Overview)
-**"สะพานรากศัพท์ (Etymological Bridge)"** คือระบบเปลี่ยนบทบาทพจนานุกรมไทยจากการเป็นเพียง *คลังคำศัพท์ (Word Repository)* ที่เปิดหาความหมาย สู่การเป็น **คลังข้อมูลและปัญญา (Knowledge & Etymological Graph)**
+## 📖 ภาพรวมของระบบ (Overview)
+**"สะพานรากศัพท์ (Etymological Bridge)"** คือระบบวิเคราะห์และสืบค้นความสัมพันธ์ทางภาษาศาสตร์เชิงประวัติศาสตร์ (Historical Comparative Linguistics) ที่เชื่อมโยง **คำยืมบาลี-สันสกฤตในภาษาไทย** เข้ากับ **คำร่วมเชื้อสาย (Cognates) ในภาษาอังกฤษ** ผ่านรากภาษาบรรพบุรุษร่วม **Proto-Indo-European (PIE)**
 
-โดยใช้นวัตกรรมทางภาษาศาสตร์เชื่อมโยง **คำยืมบาลี-สันสกฤตในภาษาไทย** เข้ากับ **คำร่วมเชื้อสาย (Cognates) ในภาษาอังกฤษ** ผ่านรากภาษาบรรพบุรุษร่วม **Proto-Indo-European (PIE)** ทำให้คนไทยสามารถเรียนรู้และจดจำคำศัพท์ภาษาอังกฤษระดับสูง (GRE, SAT, Academic English) ได้ง่าย แม่นยำ และเห็นความเชื่อมโยงของภาษาทั่วโลก
+ช่วยให้ผู้เรียนและนักวิจัยสามารถเข้าใจความสัมพันธ์ของคำศัพท์ในภาษาไทยกับภาษาตระกูลอินโด-ยูโรเปียน พร้อมทั้งช่วยในการจดจำคำศัพท์ภาษาอังกฤษระดับสูง (GRE, SAT, Academic English) ผ่านคำไทยที่คุ้นเคยในชีวิตประจำวัน
 
 ---
 
-## 🌟 จุดเด่นของผลงาน (Key Innovations)
-1. **พจนานุกรมเป็นมากกว่าพจนานุกรม:** สัมผัสเครือข่ายวิวัฒนาการคำศัพท์ข้ามทวีปกว่า 6,000 ปี
-2. **นวัตกรรมการเรียนรู้คำศัพท์ (Cognate Mnemonic):** จำศัพท์ภาษาอังกฤษระดับสูงได้ทันทีจากคำไทยที่คุ้นเคย
+## 🌟 จุดเด่นของระบบ (Key Features)
+1. **Etymological Chain:** วิเคราะห์สายวิวัฒนาการคำศัพท์ 4 ระดับ (Thai ↔ Sanskrit/Pali ↔ PIE ↔ English)
+2. **Cognate Mnemonic:** จดจำคำศัพท์ภาษาอังกฤษระดับสูงได้ทันทีจากคำไทยที่คุ้นเคย:
    - *มารดา* ↔ *maternal, matriarch, matrix* (ราก PIE: `*méh₂tēr`)
    - *ศูนย์* ↔ *zero, cave, cavity* (ราก PIE: `*ḱewH-`)
    - *ทันต* ↔ *dental, dentist, dandelion* (ราก PIE: `*h₁dónts`)
    - *วิทยา* ↔ *video, vision, wise, idea* (ราก PIE: `*weyd-`)
-3. **ความถูกต้องทางภาษาศาสตร์ 100%:** อิงหลัก Historical Linguistics & Grimm's Law ผสานคลังข้อมูลมาตรฐานราชบัณฑิตยสถาน
-4. **Interactive Force-Directed Graph:** แผนภาพโครงสร้างสายสัมพันธ์ภาษาศาสตร์แบบไดนามิกด้วย D3.js v7
-5. **สารบัญข้อมูลทางการสมบูรณ์แบบ:** รวบรวมและวิเคราะห์ชุดข้อมูลราชบัณฑิตยสภาทั้งหมดไว้ใน [`DATA_SOURCE_CATALOG.md`](DATA_SOURCE_CATALOG.md)
+3. **Phonological Law & Semantic Drift:** อธิบายกฎการเปลี่ยนแปลงทางเสียง (เช่น Grimm's Law) และคะแนนการเบี่ยงเบนทางความหมาย
+4. **Interactive Force-Directed Graph:** แสดงเครือข่ายความสัมพันธ์ทางภาษาศาสตร์แบบโต้ตอบด้วย D3.js v7
+5. **Interactive Learning Quiz:** ระบบแบบทดสอบคำศัพท์เชิงนิรุกติศาสตร์เพื่อส่งเสริมการเรียนรู้
 
 ---
 
@@ -28,11 +27,10 @@
 
 ```
 ThaiDict_Script/
-├── DATA_SOURCE_CATALOG.md         ← คู่มือวิเคราะห์สารบัญข้อมูลทางการราชบัณฑิตยสภา 100%
 ├── requirements.txt               ← รายการไลบรารี Python ที่ต้องใช้งาน
-├── etymological-bridge/           ← โค้ดระบบหลัก (Full-Stack Web Application)
+├── etymological-bridge/           ← โค้ดระบบ Prototype หลัก (Full-Stack Web Application)
 │   ├── backend/
-│   │   ├── app.py                 ← FastAPI Server & Static Host (Port 8088)
+│   │   ├── app.py                 ← FastAPI REST API Server & Static Host (Port 8088)
 │   │   ├── engine.py              ← Etymology Knowledge Engine & Graph Traversal
 │   │   ├── classifier.py          ← ตัวแยกแยะคำยืมบาลี-สันสกฤต vs คำไทยแท้ (Kra-Dai)
 │   │   └── ingest_orst.py         ← Data Pipeline สกัดคำจาก DICT_2542/DICT_2554
@@ -42,9 +40,9 @@ ThaiDict_Script/
 │   │   ├── etymology_seeds.json   ← Knowledge Graph Dataset พร้อมใช้งาน
 │   │   └── orst_official_cache.json ← ดัชนีคำทางการ 39,189 คำ
 │   └── frontend/
-│       ├── index.html             ← หน้าเว็บอินเทอร์แอคทีฟ (Glassmorphic UI)
+│       ├── index.html             ← หน้าเว็บอินเทอร์แอคทีฟ (Glassmorphic Dark Theme)
 │       ├── css/
-│       │   └── style.css          ← Cosmic Dark Theme & Responsive Styles
+│       │   └── style.css          ← สไตล์ Cosmic Glassmorphism & Responsive Design
 │       └── js/
 │           ├── app.js             ← Master UI Controller & State Manager
 │           ├── d3_graph.js        ← D3.js Force-Directed Interactive Graph
@@ -76,4 +74,4 @@ python app.py
 - **Data & Linguistic Engine:** Python Custom Graph Traverser, Regex Classifier
 - **Frontend:** Vanilla HTML5, Modern CSS (Glassmorphism & Responsive Design), Vanilla JavaScript (ES6+)
 - **Data Visualization:** D3.js v7 (Force-Directed Simulation Graph)
-- **Data Standards:** Office of the Royal Society of Thailand (ORST) Dictionaries (2542, 2554 B.E.)
+- **Data Standards:** พจนานุกรม ฉบับราชบัณฑิตยสถาน (พ.ศ. ๒๕๔๒ / ๒๕๕๔)
