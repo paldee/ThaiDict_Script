@@ -59,8 +59,8 @@
         <span class="tab-label">สำรวจสายรากศัพท์ (Bridge Explorer)</span>
       </button>
       <button class="nav-tab" data-tab="tab-graph" id="tabBtnGraph">
-        <span class="tab-icon">🌐</span>
-        <span class="tab-label">ผังเครือญาติภาษาศาสตร์ (D3 Genea-Graph)</span>
+        <span class="tab-icon">🌿</span>
+        <span class="tab-label">ผังต้นไม้รากศัพท์ (Interactive Tree)</span>
       </button>
       <button class="nav-tab" data-tab="tab-timeline" id="tabBtnTimeline">
         <span class="tab-icon">⏳</span>
@@ -279,40 +279,73 @@
       </div>
     </section>
 
-    <!-- TAB 2: D3 GENEALOGICAL GRAPH -->
+    <!-- TAB 2: INTERACTIVE COLLAPSIBLE TREE -->
     <section id="tab-graph" class="tab-pane">
       <div class="graph-container-card">
+        
+        <!-- Toolbar & Actions -->
         <div class="graph-toolbar">
           <div class="graph-info">
-            <h3 class="graph-title" id="graphTitle">ผังเครือญาติภาษาศาสตร์ของคำว่า "มารดา"</h3>
-            <span class="graph-subtitle">แผนภาพ D3 Force-Directed แสดงการแยกสาย Satem (อินเดีย/ไทย) vs Centum (ยุโรป/อังกฤษ)</span>
+            <h3 class="graph-title" id="graphTitle">ผังต้นไม้รากศัพท์ของคำว่า "มารดา"</h3>
+            <span class="graph-subtitle">แผนภาพต้นไม้แบบการ์ดโต้ตอบ (Interactive Collapsible Tree) เชื่อมโยงรากเหง้าคำไทยและอังกฤษ</span>
           </div>
           <div class="graph-controls">
-            <button class="graph-btn" id="graphResetZoomBtn">🔍 รีเซ็ตมุมมอง</button>
-            <button class="graph-btn" id="graphTogglePhysicsBtn">⏸ หยุดฟิสิกส์</button>
+            <button class="graph-btn" id="graphResetZoomBtn" title="รีเซ็ตมุมมองผัง">🔍 รีเซ็ต</button>
+            <button class="graph-btn" id="graphExpandAllBtn" title="กางทุกสาขาภาษา">➕ ขยายทั้งหมด</button>
+            <button class="graph-btn" id="graphCollapseAllBtn" title="ย่อกิ่งก้านสาขา">➖ ย่อกิ่ง</button>
+            <button class="graph-btn highlight-btn" id="graphToggleViewBtn">📋 ดูแบบการ์ดลำดับชั้น</button>
+          </div>
+        </div>
+
+        <!-- Friendly Quick Guide Banner -->
+        <div class="tree-guide-banner">
+          <span class="guide-icon">💡</span>
+          <span class="guide-text">
+            <strong>วิธีใช้งาน:</strong> คลิกที่การ์ดเพื่อ <strong>กางดู / ย่อ</strong> สาขาย่อยของตระกูลภาษา | ลากเมาส์เพื่อเลื่อน และเลื่อนลูกกลิ้งเพื่อย่อ-ขยายมุมมอง
+          </span>
+        </div>
+
+        <!-- Active Breadcrumb Path Trail -->
+        <div class="tree-breadcrumb-bar">
+          <span class="bc-label">เส้นทางสายรากศัพท์:</span>
+          <div id="treeBreadcrumb" class="tree-breadcrumb">
+            <span class="bc-item bc-active">*méh₂tēr</span>
           </div>
         </div>
 
         <!-- Legend Bar -->
         <div class="graph-legend">
-          <div class="legend-item"><span class="legend-dot dot-pie"></span> รากศัพท์แม่ PIE (*Root)</div>
-          <div class="legend-item"><span class="legend-dot dot-branch"></span> สาขาตระกูลภาษา (Branch)</div>
-          <div class="legend-item"><span class="legend-dot dot-sanskrit"></span> ภาษาสันสกฤต/บาลี (Indic)</div>
-          <div class="legend-item"><span class="legend-dot dot-thai"></span> คำในภาษาไทย (Thai Word)</div>
-          <div class="legend-item"><span class="legend-dot dot-english"></span> คำภาษาอังกฤษ (English Cognate)</div>
+          <div class="legend-item"><span class="legend-dot dot-pie"></span> รากแม่ PIE (*Root)</div>
+          <div class="legend-item"><span class="legend-dot dot-thai"></span> สายไทย/สันสกฤต (Eastern)</div>
+          <div class="legend-item"><span class="legend-dot dot-germanic"></span> เจอร์แมนิก (Germanic)</div>
+          <div class="legend-item"><span class="legend-dot dot-italic"></span> ละติน/อิตาลิก (Latin)</div>
+          <div class="legend-item"><span class="legend-dot dot-greek"></span> กรีก (Hellenic)</div>
+          <div class="legend-item"><span class="legend-dot dot-english"></span> คำอังกฤษ (Cognates)</div>
         </div>
 
-        <!-- D3 SVG Container -->
-        <div class="d3-viewport-wrapper">
-          <svg id="d3GraphSvg" width="100%" height="560"></svg>
-          
-          <!-- Node Detail Tooltip Card -->
-          <div id="graphTooltip" class="graph-tooltip" style="display: none;">
-            <div class="tooltip-title" id="tooltipTitle">Node</div>
-            <div class="tooltip-era" id="tooltipEra">Era</div>
-            <div class="tooltip-body" id="tooltipBody">Details</div>
-          </div>
+        <!-- View 1: Graphic D3 Tree View -->
+        <div id="d3GraphicWrapper" class="d3-viewport-wrapper">
+          <svg id="d3GraphSvg" width="100%" height="580"></svg>
         </div>
+
+        <!-- View 2: Cascading Flow View (Alternative card flow) -->
+        <div id="cascadingFlowWrapper" class="cascading-flow-wrapper" style="display: none;">
+          <div id="cascadingFlowContainer" class="cascading-flow-container"></div>
+        </div>
+
+        <!-- Interactive Selected Node Card Inspector -->
+        <div id="selectedNodeCard" class="selected-node-inspector" style="display: none;">
+          <div class="inspector-header">
+            <div class="inspector-title-group">
+              <h4 id="nodeDetailTitle" class="inspector-title">มารดา</h4>
+              <span id="nodeDetailBadge" class="inspector-badge">ภาษาไทย</span>
+            </div>
+            <span id="nodeDetailEra" class="inspector-era">สุโขทัย - ปัจจุบัน</span>
+          </div>
+          <p id="nodeDetailBody" class="inspector-body">คำยืมสู่ภาษาไทยระดับทางการ</p>
+          <div id="nodeDetailTip" class="inspector-tip">💡 ความหมายร่วมและเทคนิคช่วยจำ</div>
+        </div>
+
       </div>
     </section>
 

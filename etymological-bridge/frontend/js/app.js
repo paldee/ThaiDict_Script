@@ -195,6 +195,7 @@ async function loadWord(word) {
 
     if (data.found && data.entry) {
       activeEntry = data.entry;
+      window.activeEntry = data.entry;
       renderActiveWord(data.entry);
       fetchGraph(data.entry.thai_word);
       const card = document.getElementById("wordHeroCard");

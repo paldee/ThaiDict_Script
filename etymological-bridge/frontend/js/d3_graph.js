@@ -1,202 +1,768 @@
 // ==========================================================================
-// D3.js Force-Directed Genealogical Tree Visualizer
+// D3.js Collapsible Tree & Visual Hierarchy Visualizer
+// Replaces force-directed physics with clean, intuitive hierarchical cards
 // ==========================================================================
 
-let simulation = null;
-let svg = null;
-let gContainer = null;
-let zoomBehavior = null;
-let isPhysicsActive = true;
+let treeSvg = null;
+let treeG = null;
+let treeZoom = null;
+let currentRootData = null;
+let treeRoot = null;
+let activeWordEntry = null;
 
-const COLOR_MAP = {
-  pie_root: "#f59e0b",          // Golden Amber
-  branch: "#8b5cf6",            // Cosmic Violet
-  intermediate_lang: "#38bdf8", // Sky Blue
-  thai_leaf: "#10b981",         // Emerald Green
-  english_leaf: "#06b6d4"       // Cyan Neon
+// Branch color palette - warm, inviting, accessible
+const TREE_COLORS = {
+  pie_root: { bg: "rgba(245, 158, 11, 0.15)", border: "#f59e0b", glow: "rgba(245, 158, 11, 0.4)", text: "#fbbf24" },
+  eastern: { bg: "rgba(16, 185, 129, 0.15)", border: "#10b981", glow: "rgba(16, 185, 129, 0.4)", text: "#34d399" },
+  indic: { bg: "rgba(56, 189, 248, 0.15)", border: "#38bdf8", glow: "rgba(56, 189, 248, 0.4)", text: "#7dd3fc" },
+  thai: { bg: "rgba(5, 150, 105, 0.25)", border: "#10b981", glow: "rgba(16, 185, 129, 0.5)", text: "#6ee7b7" },
+  western: { bg: "rgba(99, 102, 241, 0.15)", border: "#818cf8", glow: "rgba(99, 102, 241, 0.4)", text: "#a5b4fc" },
+  germanic: { bg: "rgba(14, 165, 233, 0.15)", border: "#0ea5e9", glow: "rgba(14, 165, 233, 0.4)", text: "#38bdf8" },
+  italic: { bg: "rgba(168, 85, 247, 0.15)", border: "#a855f7", glow: "rgba(168, 85, 247, 0.4)", text: "#c084fc" },
+  greek: { bg: "rgba(244, 63, 94, 0.15)", border: "#f43f5e", glow: "rgba(244, 63, 94, 0.4)", text: "#fb7185" },
+  english: { bg: "rgba(6, 182, 212, 0.2)", border: "#06b6d4", glow: "rgba(6, 182, 212, 0.45)", text: "#67e8f9" },
+  default: { bg: "rgba(100, 116, 139, 0.15)", border: "#64748b", glow: "rgba(100, 116, 139, 0.3)", text: "#94a3b8" }
 };
 
 function initD3Graph() {
-  svg = d3.select("#d3GraphSvg");
-  svg.selectAll("*").remove(); // clean previous if any
+  const svgEl = document.getElementById("d3GraphSvg");
+  if (!svgEl) return;
 
-  const width = svg.node().getBoundingClientRect().width || 900;
-  const height = 560;
+  treeSvg = d3.select("#d3GraphSvg");
+  treeSvg.selectAll("*").remove();
 
-  // Setup Zoom & Pan
-  gContainer = svg.append("g").attr("class", "zoomable-container");
+  // Define SVG Gradients and Filters
+  const defs = treeSvg.append("defs");
 
-  zoomBehavior = d3.zoom()
-    .scaleExtent([0.4, 2.5])
+  // Subtle Drop Shadow Filter
+  const filter = defs.append("filter")
+    .attr("id", "cardShadow")
+    .attr("x", "-20%")
+    .attr("y", "-20%")
+    .attr("width", "140%")
+    .attr("height", "140%");
+  filter.append("feDropShadow")
+    .attr("dx", 0)
+    .attr("dy", 4)
+    .attr("stdDeviation", 6)
+    .attr("flood-color", "#000000")
+    .attr("flood-opacity", 0.5);
+
+  // Setup Zoom & Pan Container
+  treeG = treeSvg.append("g").attr("class", "tree-main-group");
+
+  treeZoom = d3.zoom()
+    .scaleExtent([0.35, 2.2])
     .on("zoom", (event) => {
-      gContainer.attr("transform", event.transform);
+      treeG.attr("transform", event.transform);
     });
 
-  svg.call(zoomBehavior);
+  treeSvg.call(treeZoom);
 
-  // Setup buttons
-  document.getElementById("graphResetZoomBtn").onclick = () => {
-    svg.transition().duration(500).call(zoomBehavior.transform, d3.zoomIdentity);
+  // Toolbar Button Handlers
+  const resetBtn = document.getElementById("graphResetZoomBtn");
+  if (resetBtn) {
+    resetBtn.onclick = () => resetTreeView();
+  }
+
+  const expandAllBtn = document.getElementById("graphExpandAllBtn");
+  if (expandAllBtn) {
+    expandAllBtn.onclick = () => expandAllNodes();
+  }
+
+  const collapseAllBtn = document.getElementById("graphCollapseAllBtn");
+  if (collapseAllBtn) {
+    collapseAllBtn.onclick = () => collapseAllNodes();
+  }
+
+  const toggleViewBtn = document.getElementById("graphToggleViewBtn");
+  if (toggleViewBtn) {
+    toggleViewBtn.onclick = () => toggleGraphicOrCardView();
+  }
+}
+
+/**
+ * Builds a friendly hierarchical tree structure from word entry and graph data
+ */
+function buildTreeHierarchy(entry, graphData) {
+  if (!entry) return null;
+
+  const pieWord = entry.pie_root || (graphData && graphData.pie_root) || "*PIE";
+  const pieMeaning = entry.pie_meaning || "ความหมายดั้งเดิม";
+  const indicWord = entry.pali_sanskrit_form || "ภาษาสันสกฤต/บาลี";
+  const indicMeaning = entry.pali_sanskrit_meaning || "";
+  const thaiWord = entry.thai_word;
+  const thaiRead = entry.orst_read ? `[${entry.orst_read}]` : "";
+  const thaiPos = entry.orst_pos || "น.";
+  const thaiDef = entry.orst_definition || "";
+
+  // Categorize English cognates into subfamilies
+  const germanicCogs = [];
+  const latinCogs = [];
+  const greekCogs = [];
+  const otherCogs = [];
+
+  (entry.english_cognates || []).forEach((cog, i) => {
+    const orig = (cog.origin_language || "").toLowerCase();
+    const item = {
+      id: `cog_${i}_${cog.word}`,
+      name: cog.word,
+      type: "english_leaf",
+      icon: "🇬🇧",
+      badge: cog.difficulty || "General",
+      detail: cog.origin_language || "English",
+      subDetail: cog.derivation_path || "",
+      note: cog.usage_note || "",
+      era: "คริสต์ศตวรรษที่ 5 - ปัจจุบัน",
+      styleKey: "english",
+      category: "คำในภาษาอังกฤษ"
+    };
+
+    if (orig.includes("greek") || orig.includes("hellenic")) {
+      item.icon = "📜";
+      greekCogs.push(item);
+    } else if (orig.includes("latin") || orig.includes("french") || orig.includes("italic") || orig.includes("romance")) {
+      item.icon = "🏛️";
+      latinCogs.push(item);
+    } else if (orig.includes("german") || orig.includes("old english") || orig.includes("norse")) {
+      item.icon = "🛡️";
+      germanicCogs.push(item);
+    } else {
+      otherCogs.push(item);
+    }
+  });
+
+  const westernSubBranches = [];
+  if (germanicCogs.length > 0) {
+    westernSubBranches.push({
+      id: "branch_germanic",
+      name: "สายเจอร์แมนิก (Germanic)",
+      type: "branch",
+      icon: "🛡️",
+      badge: `${germanicCogs.length} คำ`,
+      detail: "สายตระกูลภาษาอังกฤษพื้นถิ่น",
+      era: "~500 BCE",
+      styleKey: "germanic",
+      children: germanicCogs
+    });
+  }
+
+  if (latinCogs.length > 0) {
+    westernSubBranches.push({
+      id: "branch_italic",
+      name: "สายอิตาลิก / ละติน (Italic/Latin)",
+      type: "branch",
+      icon: "🏛️",
+      badge: `${latinCogs.length} คำ`,
+      detail: "สายคำศัพท์วิชาการและการศึกษา",
+      era: "~750 BCE",
+      styleKey: "italic",
+      children: latinCogs
+    });
+  }
+
+  if (greekCogs.length > 0) {
+    westernSubBranches.push({
+      id: "branch_greek",
+      name: "สายเฮลเลนิก / กรีก (Hellenic/Greek)",
+      type: "branch",
+      icon: "📜",
+      badge: `${greekCogs.length} คำ`,
+      detail: "สายปรัชญาและศัพท์เฉพาะทาง",
+      era: "~800 BCE",
+      styleKey: "greek",
+      children: greekCogs
+    });
+  }
+
+  if (otherCogs.length > 0) {
+    westernSubBranches.push({
+      id: "branch_other",
+      name: "สายร่วมอื่น ๆ (Other Branches)",
+      type: "branch",
+      icon: "🌐",
+      badge: `${otherCogs.length} คำ`,
+      detail: "คำร่วมตระกูลอินโด-ยูโรเปียน",
+      era: "ประวัติศาสตร์สากล",
+      styleKey: "western",
+      children: otherCogs
+    });
+  }
+
+  // Eastern Branch (Indo-Aryan -> Thai)
+  const easternBranch = {
+    id: "branch_eastern",
+    name: "สายตะวันออก (อินโด-อารยัน)",
+    type: "branch",
+    icon: "🌿",
+    badge: "สู่ภาษาไทย",
+    detail: "สายสัทศาสตร์ Satem ทางเอเชียใต้",
+    era: "~2000 BCE",
+    styleKey: "eastern",
+    children: [
+      {
+        id: "node_indic",
+        name: indicWord,
+        type: "intermediate_lang",
+        icon: "🇮🇳",
+        badge: entry.pali_sanskrit_lang || "สันสกฤต/บาลี",
+        detail: `ความหมายเดิม: "${indicMeaning}"`,
+        subDetail: "ภาษาคัมภีร์พระเวทและพุทธศาสนา",
+        era: "~1500 BCE",
+        styleKey: "indic",
+        children: [
+          {
+            id: "node_thai",
+            name: thaiWord,
+            type: "thai_leaf",
+            icon: "🇹🇭",
+            badge: `${thaiPos} คำยืม`,
+            detail: `${thaiRead} ${thaiPos}`,
+            subDetail: thaiDef ? (thaiDef.length > 45 ? thaiDef.slice(0, 45) + "..." : thaiDef) : "พจนานุกรมราชบัณฑิตยสภา",
+            era: "สุโขทัย - ปัจจุบัน",
+            styleKey: "thai"
+          }
+        ]
+      }
+    ]
   };
 
-  document.getElementById("graphTogglePhysicsBtn").onclick = () => {
-    if (simulation) {
-      if (isPhysicsActive) {
-        simulation.stop();
-        document.getElementById("graphTogglePhysicsBtn").innerText = "▶ เริ่มฟิสิกส์";
-      } else {
-        simulation.restart();
-        document.getElementById("graphTogglePhysicsBtn").innerText = "⏸ หยุดฟิสิกส์";
-      }
-      isPhysicsActive = !isPhysicsActive;
-    }
+  // Western Branch (Centum -> European / English)
+  const westernBranch = {
+    id: "branch_western",
+    name: "สายตะวันตก (ยุโรป/อังกฤษ)",
+    type: "branch",
+    icon: "🌍",
+    badge: `${(entry.english_cognates || []).length} คำร่วมสาย`,
+    detail: "สายสัทศาสตร์ Centum ทางยุโรป",
+    era: "~1000 BCE",
+    styleKey: "western",
+    children: westernSubBranches
+  };
+
+  // Root PIE Node
+  return {
+    id: "pie_root",
+    name: pieWord,
+    type: "pie_root",
+    icon: "🌐",
+    badge: "รากบรรพบุรุษร่วม (PIE)",
+    detail: `ความหมาย: "${pieMeaning}"`,
+    subDetail: "ทุ่งหญ้าสเตปป์ยูเรเซียโบราณ",
+    era: "~4500-2500 BCE (~6,000 ปีก่อน)",
+    styleKey: "pie_root",
+    children: [easternBranch, westernBranch]
   };
 }
 
+/**
+ * Main rendering function called by app.js
+ */
 function renderD3Graph(graphData) {
-  if (!svg) initD3Graph();
+  if (!treeSvg) initD3Graph();
 
-  gContainer.selectAll("*").remove();
+  activeWordEntry = window.activeEntry || null;
+  const rawTree = buildTreeHierarchy(activeWordEntry, graphData);
+  if (!rawTree) return;
 
-  const width = svg.node().getBoundingClientRect().width || 900;
-  const height = 560;
+  currentRootData = rawTree;
 
-  document.getElementById("graphTitle").innerText = `ผังเครือญาติภาษาศาสตร์ของคำว่า "${graphData.thai_word}" (ราก ${graphData.pie_root})`;
+  // Set titles and badges
+  const titleEl = document.getElementById("graphTitle");
+  if (titleEl) {
+    titleEl.innerText = `ผังต้นไม้รากศัพท์ของคำว่า "${rawTree.children[0]?.children[0]?.children[0]?.name || graphData.thai_word}" (ราก ${rawTree.name})`;
+  }
 
-  const nodes = graphData.nodes.map(d => Object.assign({}, d));
-  const links = graphData.links.map(d => Object.assign({}, d));
+  // Update Breadcrumb to Root
+  updateBreadcrumb([rawTree.name]);
 
-  // Initialize Force Simulation
-  simulation = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id(d => d.id).distance(d => {
-      if (d.source.type === "pie_root" || d.target.type === "pie_root") return 110;
-      return 85;
-    }))
-    .force("charge", d3.forceManyBody().strength(-350))
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("collide", d3.forceCollide().radius(d => (d.radius || 20) + 12));
+  // Convert to D3 hierarchy
+  treeRoot = d3.hierarchy(currentRootData, d => d.children);
+  treeRoot.x0 = 280;
+  treeRoot.y0 = 40;
 
-  // Render Links
-  const link = gContainer.append("g")
-    .attr("class", "links")
-    .selectAll("line")
-    .data(links)
-    .enter().append("line")
-    .attr("stroke", "rgba(255, 255, 255, 0.18)")
-    .attr("stroke-width", 1.8)
-    .attr("stroke-dasharray", d => d.source.type === "pie_root" ? "3 3" : "none");
+  // Render Graphic Tree
+  updateTree(treeRoot);
 
-  // Render Link Labels
-  const linkText = gContainer.append("g")
-    .attr("class", "link-labels")
-    .selectAll("text")
-    .data(links)
-    .enter().append("text")
-    .text(d => d.label || "")
-    .attr("font-size", "9px")
-    .attr("fill", "rgba(255, 255, 255, 0.4)")
-    .attr("font-family", "Prompt, sans-serif")
-    .attr("text-anchor", "middle");
+  // Render Cascading Cards View for mobile/toggle
+  renderCascadingCardView(currentRootData);
 
-  // Render Nodes Container
-  const node = gContainer.append("g")
-    .attr("class", "nodes")
-    .selectAll("g")
-    .data(nodes)
-    .enter().append("g")
-    .call(d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended));
+  // Focus root node initially
+  selectNodeDetails(rawTree);
+  resetTreeView();
+}
 
-  // Node Outer Glow Circles
-  node.append("circle")
-    .attr("r", d => (d.radius || 20) + 4)
-    .attr("fill", d => COLOR_MAP[d.type] || "#64748b")
-    .attr("opacity", 0.25)
-    .attr("filter", "blur(4px)");
+/**
+ * Updates the collapsible tree with smooth card rendering & bezier curves
+ */
+function updateTree(source) {
+  const cardWidth = 210;
+  const cardHeight = 62;
+  const dx = 82; // vertical separation between sibling cards
+  const dy = 260; // horizontal separation between levels
 
-  // Node Core Circle
-  node.append("circle")
-    .attr("r", d => d.radius || 20)
-    .attr("fill", d => COLOR_MAP[d.type] || "#334155")
-    .attr("stroke", "#ffffff")
-    .attr("stroke-width", 1.5)
+  // Compute the new tree layout
+  const treeLayout = d3.tree().nodeSize([dx, dy]);
+  treeLayout(treeRoot);
+
+  const nodes = treeRoot.descendants();
+  const links = treeRoot.links();
+
+  // Links Selection
+  const linkGroup = treeG.selectAll(".tree-links-group").data([0]);
+  const linkGroupEnter = linkGroup.enter().append("g").attr("class", "tree-links-group");
+  const linkContainer = linkGroup.merge(linkGroupEnter);
+
+  const link = linkContainer.selectAll(".tree-link")
+    .data(links, d => d.target.data.id);
+
+  // Enter any new links at the parent's previous position
+  const linkEnter = link.enter().append("path")
+    .attr("class", "tree-link")
+    .attr("d", d => {
+      const o = { x: source.x0 || 280, y: source.y0 || 40 };
+      return diagonalCurve({ source: o, target: o }, cardWidth);
+    })
+    .attr("fill", "none")
+    .attr("stroke", d => {
+      const style = TREE_COLORS[d.target.data.styleKey] || TREE_COLORS.default;
+      return style.border;
+    })
+    .attr("stroke-width", 2)
+    .attr("stroke-opacity", 0.45)
+    .attr("stroke-dasharray", d => d.target.data.type === "branch" ? "none" : "none");
+
+  // Transition links to their new position
+  link.merge(linkEnter).transition().duration(400)
+    .attr("d", d => diagonalCurve(d, cardWidth))
+    .attr("stroke", d => {
+      const style = TREE_COLORS[d.target.data.styleKey] || TREE_COLORS.default;
+      return style.border;
+    })
+    .attr("stroke-opacity", 0.55);
+
+  // Transition exiting nodes to the parent's new position
+  link.exit().transition().duration(400)
+    .attr("d", d => {
+      const o = { x: source.x, y: source.y };
+      return diagonalCurve({ source: o, target: o }, cardWidth);
+    })
+    .attr("stroke-opacity", 0)
+    .remove();
+
+  // Nodes Selection
+  const nodeGroup = treeG.selectAll(".tree-nodes-group").data([0]);
+  const nodeGroupEnter = nodeGroup.enter().append("g").attr("class", "tree-nodes-group");
+  const nodeContainer = nodeGroup.merge(nodeGroupEnter);
+
+  const node = nodeContainer.selectAll(".tree-node-card")
+    .data(nodes, d => d.data.id);
+
+  // Enter new nodes at the parent's previous position
+  const nodeEnter = node.enter().append("g")
+    .attr("class", "tree-node-card")
+    .attr("transform", d => `translate(${source.y0 || 40},${source.x0 || 280})`)
     .style("cursor", "pointer")
-    .on("mouseover", handleMouseOver)
-    .on("mouseout", handleMouseOut);
+    .on("click", (event, d) => handleNodeClick(event, d));
 
-  // Node Text Labels
-  node.append("text")
-    .text(d => d.name)
-    .attr("font-family", "Outfit, Prompt, sans-serif")
-    .attr("font-size", d => d.type === "pie_root" ? "12px" : "11px")
-    .attr("font-weight", d => d.type === "pie_root" ? "700" : "500")
-    .attr("fill", "#ffffff")
+  // Outer Card Box (Card Background & Glow)
+  nodeEnter.append("rect")
+    .attr("class", "card-bg")
+    .attr("width", cardWidth)
+    .attr("height", cardHeight)
+    .attr("y", -cardHeight / 2)
+    .attr("rx", 12)
+    .attr("filter", "url(#cardShadow)")
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).bg)
+    .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
+    .attr("stroke-width", 1.6);
+
+  // Card Left Accent Stripe
+  nodeEnter.append("rect")
+    .attr("class", "card-accent-bar")
+    .attr("width", 5)
+    .attr("height", cardHeight - 16)
+    .attr("x", 4)
+    .attr("y", -(cardHeight - 16) / 2)
+    .attr("rx", 3)
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border);
+
+  // Icon Badge Circle
+  nodeEnter.append("circle")
+    .attr("cx", 26)
+    .attr("cy", 0)
+    .attr("r", 14)
+    .attr("fill", "rgba(0, 0, 0, 0.45)")
+    .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
+    .attr("stroke-width", 1.2);
+
+  // Icon Text (Flag or Symbol)
+  nodeEnter.append("text")
+    .attr("class", "card-icon")
+    .attr("x", 26)
+    .attr("y", 5)
     .attr("text-anchor", "middle")
-    .attr("dy", d => (d.radius || 20) + 14);
+    .attr("font-size", "14px")
+    .text(d => d.data.icon || "•");
 
-  // Simulation Tick
-  simulation.on("tick", () => {
-    link
-      .attr("x1", d => d.source.x)
-      .attr("y1", d => d.source.y)
-      .attr("x2", d => d.target.x)
-      .attr("y2", d => d.target.y);
+  // Main Word / Name Text
+  nodeEnter.append("text")
+    .attr("class", "card-title")
+    .attr("x", 48)
+    .attr("y", -8)
+    .attr("font-family", "Outfit, Prompt, sans-serif")
+    .attr("font-size", d => d.data.type === "pie_root" ? "14px" : "13px")
+    .attr("font-weight", "700")
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).text)
+    .text(d => {
+      const name = d.data.name || "";
+      return name.length > 18 ? name.slice(0, 16) + "..." : name;
+    });
 
-    linkText
-      .attr("x", d => (d.source.x + d.target.x) / 2)
-      .attr("y", d => (d.source.y + d.target.y) / 2 - 4);
+  // Subtitle / Detail Text
+  nodeEnter.append("text")
+    .attr("class", "card-detail")
+    .attr("x", 48)
+    .attr("y", 11)
+    .attr("font-family", "Prompt, sans-serif")
+    .attr("font-size", "10px")
+    .attr("fill", "rgba(255, 255, 255, 0.7)")
+    .text(d => {
+      const txt = d.data.detail || d.data.era || "";
+      return txt.length > 22 ? txt.slice(0, 20) + "..." : txt;
+    });
 
-    node
-      .attr("transform", d => `translate(${d.x},${d.y})`);
+  // Era or Badge Tag
+  nodeEnter.append("text")
+    .attr("class", "card-era")
+    .attr("x", 48)
+    .attr("y", 23)
+    .attr("font-family", "Prompt, sans-serif")
+    .attr("font-size", "9px")
+    .attr("fill", "rgba(255, 255, 255, 0.45)")
+    .text(d => d.data.era ? `⏳ ${d.data.era}` : "");
+
+  // Expand / Collapse Pill Indicator (at the right edge of cards with children)
+  const toggleGroup = nodeEnter.append("g")
+    .attr("class", "card-toggle-group")
+    .attr("transform", `translate(${cardWidth - 8}, 0)`);
+
+  toggleGroup.append("circle")
+    .attr("class", "toggle-circle")
+    .attr("r", 9)
+    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "rgba(30, 41, 59, 0.8)")
+    .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
+    .attr("stroke-width", 1.2);
+
+  toggleGroup.append("text")
+    .attr("class", "toggle-symbol")
+    .attr("text-anchor", "middle")
+    .attr("dy", 3.5)
+    .attr("font-size", "11px")
+    .attr("font-weight", "700")
+    .attr("fill", d => d._children ? "#000" : "#fff")
+    .text(d => (d.children || d._children) ? (d._children ? "+" : "−") : "");
+
+  // Hide toggle on leaf nodes (no children or _children)
+  toggleGroup.style("display", d => (d.children || d._children) ? "block" : "none");
+
+  // Transition nodes to their new position
+  const nodeUpdate = node.merge(nodeEnter).transition().duration(400)
+    .attr("transform", d => `translate(${d.y},${d.x})`);
+
+  nodeUpdate.select(".card-bg")
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).bg)
+    .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
+    .attr("stroke-width", d => (d.data.id === activeWordEntry?.thai_word ? 2.5 : 1.6));
+
+  nodeUpdate.select(".toggle-circle")
+    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "rgba(30, 41, 59, 0.8)");
+
+  nodeUpdate.select(".toggle-symbol")
+    .attr("fill", d => d._children ? "#000" : "#fff")
+    .text(d => (d.children || d._children) ? (d._children ? "+" : "−") : "");
+
+  // Transition exiting nodes to the parent's new position
+  const nodeExit = node.exit().transition().duration(400)
+    .attr("transform", d => `translate(${source.y},${source.x})`)
+    .style("opacity", 0)
+    .remove();
+
+  // Save current positions for smooth transitions next time
+  nodes.forEach(d => {
+    d.x0 = d.x;
+    d.y0 = d.y;
   });
+}
 
-  function dragstarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+/**
+ * Custom Cubic Bezier Horizontal Curve between cards
+ */
+function diagonalCurve(d, cardWidth) {
+  const startX = d.source.y + cardWidth;
+  const startY = d.source.x;
+  const endX = d.target.y;
+  const endY = d.target.x;
+  const midX = (startX + endX) / 2;
+
+  return `M ${startX} ${startY}
+          C ${midX} ${startY},
+            ${midX} ${endY},
+            ${endX} ${endY}`;
+}
+
+/**
+ * Node Click Handler: Toggles expand/collapse and displays detail card
+ */
+function handleNodeClick(event, d) {
+  event.stopPropagation();
+
+  // Toggle children
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else if (d._children) {
+    d.children = d._children;
+    d._children = null;
   }
 
-  function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
+  // Build breadcrumb trail from root to clicked node
+  const trail = [];
+  let curr = d;
+  while (curr) {
+    trail.unshift(curr.data.name);
+    curr = curr.parent;
+  }
+  updateBreadcrumb(trail);
+
+  // Select node details in the bottom inspector
+  selectNodeDetails(d.data);
+
+  // Re-render
+  updateTree(d);
+}
+
+/**
+ * Updates the top visual breadcrumbs bar
+ */
+function updateBreadcrumb(trail) {
+  const bcEl = document.getElementById("treeBreadcrumb");
+  if (!bcEl) return;
+
+  bcEl.innerHTML = trail.map((item, idx) => {
+    const isLast = idx === trail.length - 1;
+    return `<span class="bc-item ${isLast ? 'bc-active' : ''}">${item}</span>`;
+  }).join('<span class="bc-separator"> ➔ </span>');
+}
+
+/**
+ * Shows rich, friendly detail card below tree when node is clicked
+ */
+function selectNodeDetails(data) {
+  const card = document.getElementById("selectedNodeCard");
+  if (!card) return;
+
+  const style = TREE_COLORS[data.styleKey] || TREE_COLORS.default;
+  const titleEl = document.getElementById("nodeDetailTitle");
+  const badgeEl = document.getElementById("nodeDetailBadge");
+  const eraEl = document.getElementById("nodeDetailEra");
+  const bodyEl = document.getElementById("nodeDetailBody");
+  const tipEl = document.getElementById("nodeDetailTip");
+
+  if (titleEl) titleEl.innerHTML = `${data.icon || '📌'} ${data.name}`;
+  if (badgeEl) {
+    badgeEl.innerText = data.badge || data.type || "ภาษาศาสตร์";
+    badgeEl.style.color = style.text;
+    badgeEl.style.borderColor = style.border;
+  }
+  if (eraEl) eraEl.innerText = data.era || "ช่วงเวลาประวัติศาสตร์";
+
+  let explanation = "";
+  let mnemonic = "";
+
+  if (data.type === "pie_root") {
+    explanation = `<strong>รากภาษาบรรพบุรุษอินโด-ยูโรเปียน (PIE)</strong> คือต้นกำเนิดของภาษากว่า 400 ภาษาในโลก ทั้งในยุโรป อิหร่าน และอินเดีย โดยมีอายุเก่าแก่กว่า 6,000 ปี`;
+    mnemonic = `💡 ความหมายดั้งเดิมคือ "${data.detail}" ซึ่งแตกสาขาออกไปเป็นทั้งคำไทย (ผ่านบาลี-สันสกฤต) และคำอังกฤษ!`;
+  } else if (data.type === "thai_leaf") {
+    explanation = `<strong>คำในภาษาไทย:</strong> ${data.subDetail || data.detail}<br>เป็นคำที่เรารู้จักและใช้ในชีวิตประจำวัน โดยรับถ่ายทอดผ่านพระพุทธศาสนาและวรรณคดีอินเดียโบราณ`;
+    mnemonic = `✨ คำไทยคำนี้มี "ญาติทางภาษา" ซ่อนอยู่ในภาษาอังกฤษเพียบ ลองคลิกดูสายเจอร์แมนิกและละติน!`;
+  } else if (data.type === "intermediate_lang") {
+    explanation = `<strong>ภาษาสันสกฤต/บาลี (Indic):</strong> ภาษาศักดิ์สิทธิ์โบราณแห่งลุ่มแม่น้ำสินทุ ${data.detail}`;
+    mnemonic = `🏛️ คำสันสกฤตนี้คือ "สะพานเชื่อมคนสำคัญ" ที่ส่งคำต่อไปยังภาษาไทยในยุคสุโขทัยและอยุธยา`;
+  } else if (data.type === "english_leaf") {
+    explanation = `<strong>คำภาษาอังกฤษ:</strong> ${data.detail} (${data.era})<br>วิวัฒนาการ: ${data.subDetail || 'สืบทอดตามสายอินโด-ยูโรเปียน'}`;
+    mnemonic = `🎯 <strong>เทคนิคช่วยจำ (Mnemonic):</strong> ${data.note || 'มีความหมายและรากศัพท์ร่วมกันกับคำไทย'}`;
+  } else {
+    explanation = `<strong>${data.name}:</strong> ${data.detail || 'สาขาตระกูลภาษาที่แยกตัวตามการอพยพของผู้คนในยุคโบราณ'}`;
+    mnemonic = `🔍 มีคำศัพท์ในกิ่งนี้ ${data.badge || ''} คลิกที่เครื่องหมาย [+] เพื่อเปิดดู`;
   }
 
-  function dragended(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
+  if (bodyEl) bodyEl.innerHTML = explanation;
+  if (tipEl) tipEl.innerHTML = mnemonic;
+  card.style.display = "block";
+}
 
-  // Tooltip Mechanics
-  const tooltip = document.getElementById("graphTooltip");
-  const tooltipTitle = document.getElementById("tooltipTitle");
-  const tooltipEra = document.getElementById("tooltipEra");
-  const tooltipBody = document.getElementById("tooltipBody");
-
-  function handleMouseOver(event, d) {
-    tooltipTitle.innerText = d.name;
-    tooltipEra.innerText = d.era || "Historical Stage";
-
-    let bodyText = "";
-    if (d.type === "pie_root") {
-      bodyText = `รากภาษาบรรพบุรุษอินโด-ยูโรเปียนดั้งเดิม\nความหมายเดิม: "${d.meaning}"`;
-    } else if (d.type === "thai_leaf") {
-      bodyText = `คำในภาษาไทย\nชนิดคำ: ${d.pos || "น."}\nนิยาม: ${d.definition || "-"}`;
-    } else if (d.type === "english_leaf") {
-      bodyText = `ภาษา: ${d.origin || "English"}\nวิวัฒนาการ: ${d.derivation || "-"}\nหมายเหตุ: ${d.usage_note || "-"}`;
-    } else {
-      bodyText = `สายการแยกแขนงตระกูลภาษา`;
+/**
+ * Expands all tree nodes
+ */
+function expandAllNodes() {
+  if (!treeRoot) return;
+  function expand(d) {
+    if (d._children) {
+      d.children = d._children;
+      d._children = null;
     }
-
-    tooltipBody.innerText = bodyText;
-    tooltip.style.display = "block";
-    tooltip.style.left = `${event.offsetX + 15}px`;
-    tooltip.style.top = `${event.offsetY - 20}px`;
+    if (d.children) d.children.forEach(expand);
   }
+  expand(treeRoot);
+  updateTree(treeRoot);
+  resetTreeView();
+}
 
-  function handleMouseOut() {
-    tooltip.style.display = "none";
+/**
+ * Collapses nodes to only primary branches
+ */
+function collapseAllNodes() {
+  if (!treeRoot) return;
+  function collapse(d) {
+    if (d.children) {
+      d._children = d.children;
+      d._children.forEach(collapse);
+      d.children = null;
+    }
   }
+  // Keep first level children visible, collapse deeper
+  if (treeRoot.children) {
+    treeRoot.children.forEach(collapse);
+  }
+  updateTree(treeRoot);
+  resetTreeView();
+}
+
+/**
+ * Resets pan and zoom to center
+ */
+function resetTreeView() {
+  if (!treeSvg || !treeZoom) return;
+  const svgNode = treeSvg.node();
+  const width = svgNode ? (svgNode.getBoundingClientRect().width || 960) : 960;
+  const initialTransform = d3.zoomIdentity.translate(60, 260).scale(0.85);
+
+  treeSvg.transition().duration(500).call(treeZoom.transform, initialTransform);
+}
+
+/**
+ * Toggles between D3 Graphic Tree and Cascading Card Flow
+ */
+let isGraphicView = true;
+function toggleGraphicOrCardView() {
+  const treeCard = document.getElementById("d3GraphicWrapper");
+  const flowCard = document.getElementById("cascadingFlowWrapper");
+  const btn = document.getElementById("graphToggleViewBtn");
+
+  isGraphicView = !isGraphicView;
+  if (isGraphicView) {
+    if (treeCard) treeCard.style.display = "block";
+    if (flowCard) flowCard.style.display = "none";
+    if (btn) btn.innerText = "📋 ดูแบบการ์ดลำดับชั้น";
+  } else {
+    if (treeCard) treeCard.style.display = "none";
+    if (flowCard) flowCard.style.display = "block";
+    if (btn) btn.innerText = "🌿 ดูแบบผังต้นไม้กราฟิก";
+  }
+}
+
+/**
+ * Renders the Step-by-Step Cascading Card View (Mobile & Document Friendly)
+ */
+function renderCascadingCardView(rootData) {
+  const container = document.getElementById("cascadingFlowContainer");
+  if (!container || !rootData) return;
+
+  const eastern = rootData.children?.[0];
+  const western = rootData.children?.[1];
+
+  let html = `
+    <!-- Root PIE Card -->
+    <div class="cascade-root-card">
+      <div class="cascade-header">
+        <span class="cascade-icon">🌐</span>
+        <div>
+          <span class="cascade-tag">รากบรรพบุรุษร่วม (PIE Root)</span>
+          <h3 class="cascade-title">${rootData.name}</h3>
+        </div>
+        <span class="cascade-era">${rootData.era}</span>
+      </div>
+      <p class="cascade-desc">${rootData.detail} • ${rootData.subDetail}</p>
+    </div>
+
+    <div class="cascade-branches-grid">
+      <!-- Eastern Branch: Towards Thai -->
+      <div class="cascade-branch-col eastern-col">
+        <div class="branch-col-header">
+          <span class="col-icon">🌿</span>
+          <div>
+            <h4 class="col-title">${eastern?.name || 'สายตะวันออก'}</h4>
+            <span class="col-subtitle">${eastern?.detail || 'สายอินโด-อารยัน สู่ภาษาไทย'}</span>
+          </div>
+        </div>
+
+        <div class="branch-cards-stack">
+          ${(eastern?.children || []).map(indic => `
+            <div class="cascade-step-card">
+              <div class="step-tag indic-tag">🇮🇳 ${indic.badge} (${indic.era})</div>
+              <div class="step-word">${indic.name}</div>
+              <div class="step-sub">${indic.detail}</div>
+              <div class="step-arrow">⬇ ถ่ายทอดสู่ภาษาไทย</div>
+              
+              ${(indic.children || []).map(th => `
+                <div class="cascade-target-card thai-target">
+                  <div class="target-tag">🇹🇭 ภาษาไทย (${th.era})</div>
+                  <div class="target-word">${th.name} <span class="target-phonetic">${th.detail}</span></div>
+                  <p class="target-def">${th.subDetail}</p>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Western Branch: Towards English -->
+      <div class="cascade-branch-col western-col">
+        <div class="branch-col-header">
+          <span class="col-icon">🌍</span>
+          <div>
+            <h4 class="col-title">${western?.name || 'สายตะวันตก'}</h4>
+            <span class="col-subtitle">${western?.badge || 'สายยุโรป สู่ภาษาอังกฤษ'}</span>
+          </div>
+        </div>
+
+        <div class="western-subfamilies-list">
+          ${(western?.children || []).map(sub => `
+            <div class="subfamily-group">
+              <div class="subfamily-header">
+                <span class="sub-icon">${sub.icon}</span>
+                <span class="sub-title">${sub.name}</span>
+                <span class="sub-badge">${sub.badge}</span>
+              </div>
+              <div class="subfamily-words-grid">
+                ${(sub.children || []).map(en => `
+                  <div class="en-cognate-pill-card" onclick="selectNodeDetails(${JSON.stringify(en).replace(/"/g, '&quot;')})">
+                    <div class="en-pill-top">
+                      <span class="en-pill-word">🇬🇧 ${en.name}</span>
+                      <span class="en-pill-diff">${en.badge}</span>
+                    </div>
+                    <div class="en-pill-origin">${en.detail}</div>
+                    <div class="en-pill-note">💡 ${en.note || en.subDetail}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
 }

@@ -939,7 +939,7 @@ body {
   color: var(--text-muted);
 }
 
-/* TAB 2: D3 Graph */
+/* TAB 2: Interactive Collapsible Tree & Cascading Flow */
 .graph-container-card {
   background: var(--bg-card);
   backdrop-filter: blur(25px);
@@ -955,11 +955,11 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 .graph-title {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
 }
@@ -972,6 +972,7 @@ body {
 .graph-controls {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .graph-btn {
@@ -980,23 +981,100 @@ body {
   color: var(--text-main);
   font-family: var(--font-thai);
   font-size: 0.82rem;
-  padding: 0.4rem 0.85rem;
+  padding: 0.45rem 0.9rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .graph-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
+.graph-btn.highlight-btn {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.graph-btn.highlight-btn:hover {
+  background: rgba(245, 158, 11, 0.28);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+}
+
+/* Friendly Guide Banner */
+.tree-guide-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.85rem;
+  color: #fde68a;
+}
+
+.tree-guide-banner .guide-icon {
+  font-size: 1.15rem;
+}
+
+/* Breadcrumbs Bar */
+.tree-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.82rem;
+  overflow-x: auto;
+}
+
+.bc-label {
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tree-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.bc-item {
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.bc-item.bc-active {
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.bc-separator {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+/* Legend */
 .graph-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 1.2rem;
   padding: 0.6rem 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: var(--radius-sm);
   margin-bottom: 1rem;
   font-size: 0.8rem;
@@ -1016,50 +1094,362 @@ body {
 }
 
 .dot-pie { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-.dot-branch { background: #8b5cf6; }
-.dot-sanskrit { background: #38bdf8; }
 .dot-thai { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.dot-germanic { background: #0ea5e9; }
+.dot-italic { background: #a855f7; }
+.dot-greek { background: #f43f5e; }
 .dot-english { background: #06b6d4; }
 
+/* D3 Viewport */
 .d3-viewport-wrapper {
   position: relative;
-  background: rgba(8, 12, 22, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: radial-gradient(circle at 15% 50%, rgba(20, 27, 48, 0.6) 0%, rgba(7, 10, 19, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.5);
 }
 
-.graph-tooltip {
-  position: absolute;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 0.8rem 1rem;
-  pointer-events: none;
-  z-index: 10;
-  max-width: 260px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+/* Tree Cards in SVG */
+.tree-node-card {
+  transition: transform 0.25s ease;
 }
 
-.tooltip-title {
+.tree-node-card:hover .card-bg {
+  filter: brightness(1.2) drop-shadow(0 0 12px rgba(255, 255, 255, 0.25));
+}
+
+.tree-node-card text {
+  user-select: none;
+}
+
+/* Selected Node Detail Inspector */
+.selected-node-inspector {
+  margin-top: 1.2rem;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.6rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.6rem;
+}
+
+.inspector-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.inspector-title {
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
-  font-size: 0.95rem;
-  margin-bottom: 0.2rem;
 }
 
-.tooltip-era {
+.inspector-badge {
   font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.inspector-era {
+  font-size: 0.8rem;
   color: var(--accent-cyan);
   font-family: var(--font-eng);
+}
+
+.inspector-body {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 0.6rem;
+}
+
+.inspector-tip {
+  font-size: 0.88rem;
+  color: #fef08a;
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid var(--accent-gold);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  line-height: 1.5;
+}
+
+/* Cascading Flow View (Alternative Step-by-Step Cards) */
+.cascading-flow-wrapper {
+  background: rgba(9, 13, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.6rem;
+}
+
+.cascade-root-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.08));
+  border: 1.5px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  margin-bottom: 1.6rem;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+}
+
+.cascade-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.cascade-icon {
+  font-size: 2rem;
+}
+
+.cascade-tag {
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cascade-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-eng);
+}
+
+.cascade-era {
+  margin-left: auto;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.cascade-desc {
+  font-size: 0.92rem;
+  color: #fef3c7;
+  line-height: 1.5;
+}
+
+.cascade-branches-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .cascade-branches-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cascade-branch-col {
+  background: rgba(18, 25, 43, 0.65);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+}
+
+.branch-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.8rem;
+}
+
+.col-icon {
+  font-size: 1.6rem;
+}
+
+.col-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.col-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Eastern Stack */
+.cascade-step-card {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+}
+
+.step-tag {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--accent-emerald);
   margin-bottom: 0.4rem;
 }
 
-.tooltip-body {
+.step-word {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+
+.step-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+}
+
+.step-arrow {
+  text-align: center;
   font-size: 0.82rem;
+  color: var(--accent-emerald);
+  margin: 0.6rem 0;
+  font-weight: 600;
+}
+
+.cascade-target-card.thai-target {
+  background: rgba(5, 150, 105, 0.2);
+  border: 1.5px solid var(--accent-emerald);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.target-tag {
+  font-size: 0.72rem;
+  color: #a7f3d0;
+  margin-bottom: 0.2rem;
+}
+
+.target-word {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+
+.target-phonetic {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: #6ee7b7;
+}
+
+.target-def {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Western Subfamilies */
+.western-subfamilies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.subfamily-group {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.subfamily-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.sub-icon {
+  font-size: 1.1rem;
+}
+
+.sub-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sub-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  color: var(--text-dim);
+}
+
+.subfamily-words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.8rem;
+}
+
+.en-cognate-pill-card {
+  background: rgba(18, 25, 43, 0.8);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.en-cognate-pill-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.25);
+}
+
+.en-pill-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+
+.en-pill-word {
+  font-family: var(--font-eng);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.en-pill-diff {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+.en-pill-origin {
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.4rem;
+}
+
+.en-pill-note {
+  font-size: 0.78rem;
   color: var(--text-muted);
   line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* TAB 3: Timeline */
