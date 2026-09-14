@@ -78,23 +78,26 @@
   padding: 0;
 }
 
-html, body {
+html {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  user-select: none;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  position: relative;
-  user-select: none;
 }
 
 /* ==========================================================================
@@ -391,11 +394,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem 5rem 1.5rem;
-  max-width: 900px;
+  padding: 2rem 1.5rem 6rem 1.5rem;
+  max-width: calc(900px + var(--scroll-progress, 0) * 320px);
   margin: 0 auto;
   width: 100%;
   text-align: center;
+  transition: max-width 0.25s var(--ease-spring);
 }
 
 /* ==========================================================================
@@ -403,25 +407,29 @@ body {
    REQUIREMENT: 
    - ตอน Ambient: เคลื่อนไหวลอยไปมา
    - ตอนกดกล่อง: "คำนั้นค่อยชัดนิ่งตรง ตัวอักษรมีหัว หนา ชัด"
-   ========================================================================== */
-
-/* ==========================================================================
-   Greeting Headline: "วันนี้อยากให้ภาษาไทยทำอะไรให้คุณ"
-   REQUIREMENT:
-   - ตอน Ambient: ซ่อนหัวข้อใหญ่ตรงกลางไว้ ไม่ให้รู้ล่วงหน้า โดยคำจะกระจัดกระจายอยู่ในก้อนเมฆคำเหมือนคำทั่วไป
-   - ตอนกดกล่อง: คำทั้ง 5 บินจากทั่วหน้าจอ เข้ามารวมตัวตรงกลาง ขยายใหญ่เป็นประโยคหลัก
-   - คำสุดท้ายที่เรียงแล้ว: ตัวอักษรมีหัว หนา ชัด (Sarabun Bold 800)
+   - ตอนเลื่อนเมาส์ลงอ่านคำตอบ: ข้อความถูกดันขึ้น ขยายใหญ่ขึ้น และพ้นขอบจอบนไป
+   - ตอนเลื่อนกลับไปค้นใหม่: หดกลับมาขนาดและตำแหน่งเท่าเดิม
    ========================================================================== */
 
 .greeting-wrapper {
-  margin-bottom: 2.25rem;
+  margin-bottom: calc(2.25rem * (1 - var(--scroll-progress, 0)));
   position: relative;
   z-index: 6;
-  min-height: 90px;
+  min-height: calc(90px * (1 - var(--scroll-progress, 0)));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transform-origin: center top;
+  transform: translateY(calc(var(--scroll-progress, 0) * -160px)) scale(calc(1 + var(--scroll-progress, 0) * 0.20));
+  opacity: calc(1 - var(--scroll-progress, 0) * 1.35);
+  pointer-events: none;
+  transition: 
+    transform 0.12s ease-out, 
+    opacity 0.12s ease-out, 
+    margin-bottom 0.18s ease-out, 
+    min-height 0.18s ease-out;
+  will-change: transform, opacity, margin-bottom;
 }
 
 .greeting-headline {
@@ -452,16 +460,32 @@ body {
   visibility: hidden; /* Slots act as coordinate anchors */
 }
 
+/* When words have docked, reveal the real DOM slots in natural flow */
+.greeting-headline.is-docked .greeting-slot {
+  visibility: visible;
+}
+
+.greeting-slot .slot-text {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  color: #000000;
+}
+
 /* Target Word Token actively assembling from cloud */
 .word-token.is-target-assembler {
   z-index: 80 !important;
   font-family: var(--font-heading) !important;
   font-weight: 800 !important; /* หนา ชัด มีหัว */
   color: #0F172A !important;
-  opacity: 1 !important;
   filter: none !important;
   pointer-events: none;
   white-space: nowrap;
+}
+
+.word-token.is-docked-hidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Luminous Sheen sweep passes over headline when locked */
@@ -949,12 +973,15 @@ body.state-ambient .glass-search-container {
 
 .response-drawer {
   width: 100%;
-  max-width: 680px;
+  max-width: calc(680px + var(--scroll-progress, 0) * 500px);
   margin-top: 1.5rem;
   display: none;
   opacity: 0;
   transform: translateY(16px);
-  transition: all var(--transition-normal);
+  transition: 
+    max-width 0.25s var(--ease-spring),
+    opacity var(--transition-normal), 
+    transform var(--transition-normal);
   z-index: 10;
 }
 

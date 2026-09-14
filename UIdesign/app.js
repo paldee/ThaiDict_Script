@@ -421,6 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
     targetParticles.forEach((p, idx) => {
       if (!p) return;
       p.isAssembling = true;
+      p.el.classList.remove('is-docked-hidden');
+      p.el.style.display = '';
       p.el.classList.add('is-target-assembler');
 
       const targetSlot = document.getElementById(`targetSlot${idx}`);
@@ -448,9 +450,23 @@ document.addEventListener('DOMContentLoaded', () => {
       p.el.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     });
 
-    // 4. Trigger Sheen Pass when all words have docked and assembled
+    // 4. Trigger Sheen Pass and dock words into genuine DOM slots
     setTimeout(() => {
       greetingHeadline.classList.add('sheen-active');
+      greetingHeadline.classList.add('is-docked');
+      // Reveal genuine slots in DOM flow so they scroll naturally
+      document.querySelectorAll('.greeting-slot').forEach(slot => {
+        slot.style.visibility = 'visible';
+      });
+      // Hide the floating particles completely so they never overlap the real text
+      targetParticles.forEach(p => {
+        if (p && p.el) {
+          p.el.classList.remove('is-target-assembler');
+          p.el.classList.add('is-docked-hidden');
+          p.el.style.display = 'none';
+          p.el.style.opacity = '0';
+        }
+      });
     }, 1350);
   }
 
@@ -458,9 +474,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function disperseToAmbient() {
     isAssembled = false;
 
-    // Reset headline visibility
+    // Reset headline visibility and docked status
     greetingHeadline.style.opacity = '0';
-    greetingHeadline.classList.remove('sheen-active');
+    greetingHeadline.classList.remove('sheen-active', 'is-docked');
+    document.querySelectorAll('.greeting-slot').forEach(slot => {
+      slot.style.visibility = 'hidden';
+    });
     greetingSubtext.style.opacity = '0';
     greetingSubtext.style.transform = 'translateY(8px)';
 
@@ -471,7 +490,9 @@ document.addEventListener('DOMContentLoaded', () => {
     targetParticles.forEach((p, idx) => {
       if (!p) return;
       p.isAssembling = false;
-      p.el.classList.remove('is-target-assembler');
+      p.el.classList.remove('is-target-assembler', 'is-docked-hidden');
+      p.el.style.display = '';
+      p.el.style.opacity = p.baseOpacity;
 
       // Random position in different screen quadrants
       const itemConfig = denseWordList[idx];
@@ -917,9 +938,26 @@ document.addEventListener('DOMContentLoaded', () => {
       + `<div class="g-hint">คลิก (หรือกด Enter ที่) คำใด ๆ เพื่อสำรวจความสัมพันธ์ของคำนั้นต่อ · ยิ่งใกล้กลาง = ยิ่งเกี่ยวข้อง</div>`;
   }
 
+  // ==========================================================================
+  // Scroll Driven Kinetic Animation:
+  // - When scrolling down to read response details:
+  //   Headline pushes up, scales up (+20%), and exits past top screen boundary
+  //   Response drawer and stage container expand to wide spacious canvas (1200px)
+  // - When scrolling back up to search new word:
+  //   Headline smoothly returns and shrinks back to original size
+  // ==========================================================================
+  function updateScrollProgress() {
+    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const progress = Math.min(Math.max(scrollY / 180, 0), 1);
+    document.documentElement.style.setProperty('--scroll-progress', progress.toFixed(3));
+  }
+
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
   // Handle window resize dynamically
   window.addEventListener('resize', () => {
-    if (isAssembled) {
+    updateScrollProgress();
+    if (isAssembled && !greetingHeadline.classList.contains('is-docked')) {
       targetParticles.forEach((p, idx) => {
         const targetSlot = document.getElementById(`targetSlot${idx}`);
         if (targetSlot && p) {
