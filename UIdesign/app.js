@@ -29,13 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const responseDrawer = document.getElementById('responseDrawer');
   const responseBody = document.getElementById('responseBody');
   const closeResponseBtn = document.getElementById('closeResponseBtn');
-  const pillChips = document.querySelectorAll('.pill-chip');
-
-  // State Toggle Buttons
-  const btnStateAmbient = document.getElementById('btnStateAmbient');
-  const btnStateAligned = document.getElementById('btnStateAligned');
-  const btnStateActive = document.getElementById('btnStateActive');
-  const stateBtns = [btnStateAmbient, btnStateAligned, btnStateActive];
 
   // Current State: 'ambient' | 'aligned' | 'active'
   let currentState = 'ambient';
@@ -375,21 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
     body.classList.remove('state-ambient', 'state-aligned', 'state-active');
     body.classList.add(`state-${state}`);
 
-    // Update toggle buttons
-    stateBtns.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.state === state);
-    });
-
     if (state === 'ambient') {
-      statusLabel.textContent = 'Ambient • ตัวอักษรเคลื่อนไหวอิสระ';
       targetSpeedMultiplier = 1.0; // วิ่งเต็มสปีดใน Ambient
       disperseToAmbient();
     } else if (state === 'aligned') {
-      statusLabel.textContent = 'Aligned • คำรวมตัวนิ่งตรง ชัด หนา มีหัว';
-      targetSpeedMultiplier = 0.22; // "ข้างหลังไม่ได้หายไปเลย แต่วิ่งช้าลงและค่อยๆ จางลง"
+      targetSpeedMultiplier = 0.22; // ชะลอช้าลงนุ่มนวล
       triggerAssembly();
     } else if (state === 'active') {
-      statusLabel.textContent = 'Active • กำลังใช้งานและพิมพ์';
       targetSpeedMultiplier = 0.18; // ชะลอช้าลงนุ่มนวล เป็นพื้นหลัง
       triggerAssembly();
     }
@@ -401,11 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isAssembled) return;
     isAssembled = true;
 
-    // 1. Fade other background words gradually down to 0.02 so they don't bleed into text
+    const isDark = body.classList.contains('theme-dark');
+    const dimOpacity = isDark ? 0.18 : 0.13;
+
+    // 1. Fade other background words softly so they remain clearly visible as they decelerate
     wordParticles.forEach(p => {
       if (!p.isTarget) {
-        p.el.style.opacity = '0.02';
-        p.el.style.filter = 'blur(2px)';
+        p.el.style.opacity = dimOpacity;
+        p.el.style.filter = 'blur(0.6px)';
       }
     });
 
@@ -434,31 +422,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Smooth cubic-bezier flight directly into position
       p.el.style.transition = `
-        transform 1.30s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 40}ms,
-        font-size 1.30s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 40}ms,
-        color 0.8s ease,
-        opacity 0.7s ease
+        transform 1.25s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 40}ms,
+        font-size 1.25s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 40}ms,
+        color 0.6s ease,
+        opacity 0.6s ease
       `;
 
       p.el.style.transform = `translate3d(${destX}px, ${destY}px, 0)`;
       p.el.style.fontSize = computedFontSize;
       p.el.style.fontFamily = "'Sarabun', 'Krub', sans-serif";
       p.el.style.fontWeight = '800'; // หนา ชัด มีหัว
-      p.el.style.color = '#000000'; // ดำเข้มสนิท 100%
+      p.el.style.color = isDark ? '#FFFFFF' : '#0F2942';
       p.el.style.opacity = '1';
       p.el.style.filter = 'none';
-      p.el.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
+      p.el.style.textShadow = isDark ? '0 0 25px rgba(56, 189, 248, 0.35)' : '0 1px 2px rgba(0, 0, 0, 0.15)';
     });
 
     // 4. Trigger Sheen Pass and dock words into genuine DOM slots
     setTimeout(() => {
-      greetingHeadline.classList.add('sheen-active');
-      greetingHeadline.classList.add('is-docked');
+      greetingHeadline.classList.add('sheen-active', 'is-docked');
       // Reveal genuine slots in DOM flow so they scroll naturally
       document.querySelectorAll('.greeting-slot').forEach(slot => {
         slot.style.visibility = 'visible';
       });
-      // Hide the floating particles completely so they never overlap the real text
+      // Hide the floating particles so they don't duplicate
       targetParticles.forEach(p => {
         if (p && p.el) {
           p.el.classList.remove('is-target-assembler');
@@ -467,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
           p.el.style.opacity = '0';
         }
       });
-    }, 1350);
+    }, 1300);
   }
 
   // Disperse back to Ambient State
@@ -563,13 +550,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     modeSelectionContainer.style.display = 'block';
-    suggestionTray.style.display = 'none'; // ซ่อนไอเดียเริ่มต้นเมื่อเริ่มพิมพ์คำของตัวเอง
+    if (suggestionTray) suggestionTray.style.display = 'none';
   }
 
   // ซ่อน 2 ก้อนโหมด
   function hideModeSelection() {
     modeSelectionContainer.style.display = 'none';
-    suggestionTray.style.display = 'flex';
+    if (suggestionTray) suggestionTray.style.display = 'flex';
     responseDrawer.classList.remove('show');
     modeCardGeneral.classList.remove('is-selected');
     modeCardEtymology.classList.remove('is-selected');
@@ -600,6 +587,19 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.focus();
   });
 
+  // Click outside to smoothly return to Ambient State if input is empty
+  document.addEventListener('click', (e) => {
+    if (currentState === 'aligned' && !searchInput.value.trim()) {
+      const isInsideTextbox = e.target.closest('#liquidTextbox');
+      const isInsideModes = e.target.closest('#modeSelectionContainer');
+      const isInsideTheme = e.target.closest('#themeToggleBtn');
+      if (!isInsideTextbox && !isInsideModes && !isInsideTheme) {
+        searchInput.blur();
+        setState('ambient');
+      }
+    }
+  });
+
   // Keyboard Shortcuts (Enter & Escape)
   searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && searchInput.value.trim().length > 0) {
@@ -625,42 +625,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Suggestion Pill Click
-  pillChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const query = chip.dataset.query;
-      searchInput.value = query;
-      setState('active');
-      actionSubmitBtn.classList.add('is-active');
-      actionSubmitBtn.disabled = false;
-      searchInput.focus();
-      showModeSelection(query);
-      executeGeneralSearch(query);
-    });
-  });
+  // =========================================================================
+  // Dark / Light Theme Toggle System
+  // =========================================================================
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const themeToggleText = document.getElementById('themeToggleText');
 
-  // Mode Toggle Buttons
-  stateBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetState = btn.dataset.state;
-      setState(targetState);
-      if (targetState === 'active') {
-        if (!searchInput.value) searchInput.value = 'ทันต';
-        actionSubmitBtn.classList.add('is-active');
-        actionSubmitBtn.disabled = false;
-        searchInput.focus();
-        showModeSelection(searchInput.value);
-      } else if (targetState === 'aligned') {
-        searchInput.focus();
-      } else if (targetState === 'ambient') {
-        searchInput.value = '';
-        searchInput.blur();
-        actionSubmitBtn.classList.remove('is-active');
-        actionSubmitBtn.disabled = true;
-        hideModeSelection();
-      }
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      body.classList.add('theme-dark');
+      if (themeToggleText) themeToggleText.textContent = 'โหมดสว่าง';
+      localStorage.setItem('antigravity_theme', 'dark');
+    } else {
+      body.classList.remove('theme-dark');
+      if (themeToggleText) themeToggleText.textContent = 'โหมดมืด';
+      localStorage.setItem('antigravity_theme', 'light');
+    }
+    // Re-render D3 graph if active so colors match instantly
+    if (window.treeRoot && window.updateTree) {
+      window.updateTree(window.treeRoot);
+    }
+  }
+
+  const savedTheme = localStorage.getItem('antigravity_theme') || 'light';
+  applyTheme(savedTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = body.classList.contains('theme-dark');
+      applyTheme(isDark ? 'light' : 'dark');
     });
-  });
+  }
 
   // Close Response Drawer
   closeResponseBtn.addEventListener('click', () => {
@@ -702,10 +697,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // นิยาม
       if (data.entry) {
         html += `<div class="response-highlight-box">
-          <p style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.4rem;">
+          <p style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">
             ${escapeHtml(data.entry.word)} <span style="font-size: 0.95rem; color: var(--accent-blue); font-weight: 400;">${escapeHtml(data.entry.pos)}</span>
           </p>
-          <p style="font-size: 1.05rem; line-height: 1.5;">${escapeHtml(data.entry.definition)}</p>
+          <p style="font-size: 1.05rem; line-height: 1.5; color: var(--text-secondary);">${escapeHtml(data.entry.definition)}</p>
         </div>`;
       } else {
         html += `<div class="response-highlight-box"><p>ไม่พบนิยามของคำนี้ในพจนานุกรม</p></div>`;
@@ -731,12 +726,12 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">คำที่เกี่ยวข้องพร้อมคำอธิบาย (Explainable)</h4>`;
         html += `<ul style="list-style: none; padding: 0; margin-top: 10px;">`;
         data.related.forEach(r => {
-          html += `<li style="padding: 10px 0; border-bottom: 1px dashed #CBD5E1;">
-            <strong style="color: var(--accent-blue); font-size: 1.1rem; cursor: pointer;" class="rw" data-word="${escapeHtml(r.word)}">${escapeHtml(r.word)}</strong>
-            <span style="font-size: 0.82rem; color: #64748B; margin-left: 8px;">ความสัมพันธ์: ${r.score.toFixed(2)}</span>
-            <div style="font-size: 0.92rem; color: #334E68; margin-top: 5px; padding-left: 10px; border-left: 3px solid var(--accent-blue);">`;
+          html += `<li style="padding: 14px 0; border-bottom: 1px dashed var(--glass-border);">
+            <strong style="color: var(--accent-blue); font-size: 1.35rem; cursor: pointer; font-weight: 700;" class="rw" data-word="${escapeHtml(r.word)}">${escapeHtml(r.word)}</strong>
+            <span style="font-size: 1.05rem; color: var(--text-muted); margin-left: 10px; font-weight: 500;">ความสัมพันธ์: ${r.score.toFixed(2)}</span>
+            <div style="font-size: 1.16rem; line-height: 1.75; color: var(--text-primary); margin-top: 8px; padding-left: 14px; border-left: 3.5px solid var(--accent-blue);">`;
           r.path.forEach(p => {
-             html += `<div>↳ ${escapeHtml(p)}</div>`;
+             html += `<div style="padding: 2px 0;">↳ ${escapeHtml(p)}</div>`;
           });
           html += `</div></li>`;
         });
@@ -781,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.found && data.entry) {
         const entry = data.entry;
         html += `<div class="response-highlight-box" style="border-left-color: var(--accent-blue);">
-          <p style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin-bottom: 0.3rem;">
+          <p style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem;">
             ภาษาไทย: <span style="color: var(--accent-blue);">${escapeHtml(entry.thai_word)}</span>
           </p>`;
         
@@ -802,9 +797,9 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `</div>`;
         
         if (entry.explanation) {
-          html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: #0F2942;"><strong>คำอธิบายทางภาษาศาสตร์:</strong> ${escapeHtml(entry.explanation)}</p>`;
+          html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: var(--text-primary);"><strong>คำอธิบายทางภาษาศาสตร์:</strong> ${escapeHtml(entry.explanation)}</p>`;
         } else if (data.classification && data.classification.entry && data.classification.entry.sound_change_law) {
-           html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: #0F2942;"><strong>การวิเคราะห์สัทศาสตร์เชิงประวัติศาสตร์:</strong> ${escapeHtml(data.classification.entry.sound_change_law)}</p>`;
+           html += `<p style="margin-top: 1.1rem; font-size: 1.15rem; line-height: 1.75; color: var(--text-primary);"><strong>การวิเคราะห์สัทศาสตร์เชิงประวัติศาสตร์:</strong> ${escapeHtml(data.classification.entry.sound_change_law)}</p>`;
         }
 
         // 1. แผนภาพรากศัพท์ (Etymology Tree) — ย้ายขึ้นมาก่อน Timeline ตามที่ผู้ใช้สั่ง
@@ -842,7 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
               html += `<div style="position: absolute; left: -24px; top: 5px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent-blue);"></div>`;
               html += `<strong style="color: var(--text-primary); font-size: 1.15rem;">${escapeHtml(t.stage || '')} (${escapeHtml(t.era || '')})</strong><br>`;
               html += `<span style="color: var(--accent-blue); font-family: monospace; font-size: 1.25rem; font-weight: 700;">${escapeHtml(t.form || '')}</span>`;
-              if (t.meaning) html += ` <span style="color: #334E68; font-size: 1.1rem;">— ${escapeHtml(t.meaning)}</span>`;
+              if (t.meaning) html += ` <span style="color: var(--text-secondary); font-size: 1.1rem;">— ${escapeHtml(t.meaning)}</span>`;
               html += `</div>`;
            });
            html += `</div>`;

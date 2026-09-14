@@ -48,25 +48,24 @@
       <span class="brand-title">KINETIC MINIMALISM</span>
     </div>
 
-    <!-- Interactive Mode Toggles -->
-    <div class="mode-toggles">
-      <button class="state-toggle-btn active" data-state="ambient" id="btnStateAmbient" title="สถานะคำศัพท์วิ่งไปมาเยอะๆ ทั้งแนวตั้งและแนวนอน">
-        <span class="btn-indicator"></span>
-        <span>1. Ambient State</span>
+    <div class="theme-toggle-container">
+      <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="สลับโหมดมืด/สว่าง" title="สลับโหมดมืด/สว่าง">
+        <svg class="theme-icon sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span class="theme-toggle-text" id="themeToggleText">โหมดมืด</span>
       </button>
-      <button class="state-toggle-btn" data-state="aligned" id="btnStateAligned" title="สถานะกดกล่องข้อความ คำหยุดนิ่งตรง ชัด หนา มีหัว">
-        <span class="btn-indicator"></span>
-        <span>2. Aligned State</span>
-      </button>
-      <button class="state-toggle-btn" data-state="active" id="btnStateActive" title="สถานะกำลังพิมพ์และส่งคำสั่ง">
-        <span class="btn-indicator"></span>
-        <span>3. Active State</span>
-      </button>
-    </div>
-
-    <div class="status-badge" id="systemStateBadge">
-      <span class="status-dot"></span>
-      <span class="status-label" id="statusLabel">Ambient • ตัวอักษรเคลื่อนไหวอิสระ</span>
     </div>
   </header>
 
@@ -192,22 +191,6 @@
         </div>
       </div>
 
-      <!-- Floating Suggestion Pills -->
-      <div class="suggestion-tray" id="suggestionTray">
-        <span class="tray-title">ไอเดียเริ่มต้น:</span>
-        <button class="pill-chip" data-query="รากศัพท์คำว่า 'มารดา' และ 'วิทยา'">
-          รากศัพท์คำว่า "มารดา"
-        </button>
-        <button class="pill-chip" data-query="คำไทยที่ยืมมาจากสันสกฤตมีอะไรบ้าง">
-          คำยืมสันสกฤต
-        </button>
-        <button class="pill-chip" data-query="ความเชื่อมโยงคำว่า 'ทันต' สู่คำว่า Dental">
-          คำร่วมสาย PIE (ทันต ↔ Dental)
-        </button>
-        <button class="pill-chip" data-query="แนะนำคำภาษาไทยที่มีความหมายลึกซึ้ง">
-          หาคำที่มีความหมายลึกซึ้ง
-        </button>
-      </div>
     </div>
 
     <!-- Interactive Execution Response Card (Liquid Glass Drawer) -->
@@ -227,15 +210,6 @@
     </div>
 
   </main>
-
-  <!-- Bottom Details & Navigation Tip -->
-  <footer class="app-footer">
-    <div class="footer-info">
-      <span>Kinetic Typography & Liquid Glass UI • สำนักงานราชบัณฑิตยสภา</span>
-      <span class="divider">•</span>
-      <span class="shortcut-tip">กด <kbd>Enter</kbd> เพื่อส่ง • คลิกกล่องข้อความเพื่อ Snap คำนิ่งตรง • กด <kbd>Esc</kbd> เพื่อกลับสู่ Ambient</span>
-    </div>
-  </footer>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="d3_graph.js"></script>

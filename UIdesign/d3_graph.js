@@ -10,8 +10,8 @@ let currentRootData = null;
 let treeRoot = null;
 let activeWordEntry = null;
 
-// Branch color palette - Royal Society Light Theme (High Contrast & Legible)
-const TREE_COLORS = {
+// Branch color palette - Support both Light and Dark themes dynamically
+const TREE_COLORS_LIGHT = {
   pie_root: { bg: "#FEF3C7", border: "#D97706", badgeBg: "#D97706", badgeText: "#FFFFFF", text: "#92400E", line: "#D97706" },
   eastern: { bg: "#ECFDF5", border: "#059669", badgeBg: "#059669", badgeText: "#FFFFFF", text: "#065F46", line: "#059669" },
   indic: { bg: "#F0F9FF", border: "#0284C7", badgeBg: "#0284C7", badgeText: "#FFFFFF", text: "#0369A1", line: "#0284C7" },
@@ -23,6 +23,32 @@ const TREE_COLORS = {
   english: { bg: "#F8FAFC", border: "#236596", badgeBg: "#236596", badgeText: "#FFFFFF", text: "#0F2942", line: "#236596" },
   default: { bg: "#F8FAFC", border: "#64748B", badgeBg: "#64748B", badgeText: "#FFFFFF", text: "#1E293B", line: "#64748B" }
 };
+
+const TREE_COLORS_DARK = {
+  pie_root: { bg: "#2A1F10", border: "#F59E0B", badgeBg: "#D97706", badgeText: "#FFFFFF", text: "#FDE68A", line: "#F59E0B" },
+  eastern: { bg: "#08231A", border: "#10B981", badgeBg: "#059669", badgeText: "#FFFFFF", text: "#A7F3D0", line: "#10B981" },
+  indic: { bg: "#092237", border: "#38BDF8", badgeBg: "#0284C7", badgeText: "#FFFFFF", text: "#BAE6FD", line: "#38BDF8" },
+  thai: { bg: "#09261E", border: "#34D399", badgeBg: "#047857", badgeText: "#FFFFFF", text: "#D1FAE5", line: "#34D399" },
+  western: { bg: "#191B36", border: "#818CF8", badgeBg: "#4F46E5", badgeText: "#FFFFFF", text: "#C7D2FE", line: "#818CF8" },
+  germanic: { bg: "#092237", border: "#38BDF8", badgeBg: "#0284C7", badgeText: "#FFFFFF", text: "#BAE6FD", line: "#38BDF8" },
+  italic: { bg: "#231333", border: "#C084FC", badgeBg: "#9333EA", badgeText: "#FFFFFF", text: "#E9D5FF", line: "#C084FC" },
+  greek: { bg: "#2E121C", border: "#FB7185", badgeBg: "#E11D48", badgeText: "#FFFFFF", text: "#FECDD3", line: "#FB7185" },
+  english: { bg: "#0F1E30", border: "#38BDF8", badgeBg: "#236596", badgeText: "#FFFFFF", text: "#F8FAFC", line: "#38BDF8" },
+  default: { bg: "#1E293B", border: "#94A3B8", badgeBg: "#64748B", badgeText: "#FFFFFF", text: "#F8FAFC", line: "#94A3B8" }
+};
+
+function getTreeColors(styleKey) {
+  const isDark = document.body.classList.contains('theme-dark');
+  const palette = isDark ? TREE_COLORS_DARK : TREE_COLORS_LIGHT;
+  return palette[styleKey] || palette.default;
+}
+
+// Transparent Proxy so all TREE_COLORS[key] lookups automatically resolve based on current theme
+const TREE_COLORS = new Proxy({}, {
+  get(target, prop) {
+    return getTreeColors(prop);
+  }
+});
 
 function initD3Graph() {
   const svgEl = document.getElementById("d3GraphSvg");
@@ -280,6 +306,7 @@ function renderD3Graph(graphData) {
   treeRoot = d3.hierarchy(currentRootData, d => d.children);
   treeRoot.x0 = 280;
   treeRoot.y0 = 40;
+  window.treeRoot = treeRoot;
 
   // Render Graphic Tree
   updateTree(treeRoot);
@@ -474,16 +501,27 @@ function updateTree(source) {
   const nodeUpdate = node.merge(nodeEnter).transition().duration(400)
     .attr("transform", d => `translate(${d.y},${d.x})`);
 
+  const isDark = document.body.classList.contains('theme-dark');
+
   nodeUpdate.select(".card-bg")
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).bg)
     .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
     .attr("stroke-width", d => (d.data.id === activeWordEntry?.thai_word ? 2.5 : 1.5));
 
+  nodeUpdate.select(".card-title")
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).text);
+
+  nodeUpdate.select(".card-detail")
+    .attr("fill", isDark ? "#CBD5E1" : "#334E68");
+
+  nodeUpdate.select(".card-era")
+    .attr("fill", isDark ? "#94A3B8" : "#64748B");
+
   nodeUpdate.select(".toggle-circle")
-    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "#FFFFFF");
+    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : (isDark ? "#1E293B" : "#FFFFFF"));
 
   nodeUpdate.select(".toggle-symbol")
-    .attr("fill", d => d._children ? "#FFFFFF" : "#0F2942")
+    .attr("fill", d => d._children ? "#FFFFFF" : (isDark ? "#F8FAFC" : "#0F2942"))
     .text(d => (d.children || d._children) ? (d._children ? "+" : "−") : "");
 
   // Transition exiting nodes to the parent's new position
@@ -770,3 +808,8 @@ function renderCascadingCardView(rootData) {
 
   container.innerHTML = html;
 }
+
+// Global exports
+window.renderD3Graph = renderD3Graph;
+window.updateTree = updateTree;
+
