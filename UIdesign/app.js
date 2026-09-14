@@ -401,11 +401,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isAssembled) return;
     isAssembled = true;
 
-    // 1. Fade other background words gradually down to 0.11 (not disappear!)
+    // 1. Fade other background words gradually down to 0.02 so they don't bleed into text
     wordParticles.forEach(p => {
       if (!p.isTarget) {
-        p.el.style.opacity = '0.11';
-        p.el.style.filter = 'blur(1px)';
+        p.el.style.opacity = '0.02';
+        p.el.style.filter = 'blur(2px)';
       }
     });
 
@@ -686,14 +686,15 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = '';
       
       // การตัดคำ
-      html += `<div class="response-query-tag" style="background: rgba(124, 156, 255, 0.1); color: var(--accent-blue);">โหมด: ค้นหาทั่วไป (WACHA)</div>`;
+      html += `<div class="response-query-tag" style="background: rgba(35, 101, 150, 0.1); color: var(--accent-blue);">โหมด: ค้นหาทั่วไป (WACHA)</div>`;
       
       if (data.segmentation && data.segmentation.length > 0) {
         html += `<div style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">`;
         data.segmentation.forEach(t => {
-          const color = t.in_vocab ? "var(--accent-blue)" : "var(--accent-magenta)";
-          const border = t.in_vocab ? "rgba(255,255,255,0.15)" : "var(--accent-magenta)";
-          html += `<span style="padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,0.3); border: 1px solid ${border}; color: ${color}; font-size: 0.95rem;">${escapeHtml(t.text)}</span>`;
+          const color = t.in_vocab ? "var(--accent-blue)" : "#B91C1C";
+          const bg = t.in_vocab ? "#F0F5FA" : "#FEF2F2";
+          const border = t.in_vocab ? "#CBDDEB" : "#FECACA";
+          html += `<span style="padding: 4px 12px; border-radius: 999px; background: ${bg}; border: 1px solid ${border}; color: ${color}; font-size: 0.95rem; font-weight: 500;">${escapeHtml(t.text)}</span>`;
         });
         html += `</div>`;
       }
@@ -730,10 +731,10 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">คำที่เกี่ยวข้องพร้อมคำอธิบาย (Explainable)</h4>`;
         html += `<ul style="list-style: none; padding: 0; margin-top: 10px;">`;
         data.related.forEach(r => {
-          html += `<li style="padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.1);">
-            <strong style="color: var(--accent-blue); font-size: 1.1rem;">${escapeHtml(r.word)}</strong>
-            <span style="font-size: 0.8rem; color: var(--text-tertiary); margin-left: 8px;">score: ${r.score.toFixed(2)}</span>
-            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--accent-blue);">`;
+          html += `<li style="padding: 10px 0; border-bottom: 1px dashed #CBD5E1;">
+            <strong style="color: var(--accent-blue); font-size: 1.1rem; cursor: pointer;" class="rw" data-word="${escapeHtml(r.word)}">${escapeHtml(r.word)}</strong>
+            <span style="font-size: 0.82rem; color: #64748B; margin-left: 8px;">ความสัมพันธ์: ${r.score.toFixed(2)}</span>
+            <div style="font-size: 0.92rem; color: #334E68; margin-top: 5px; padding-left: 10px; border-left: 3px solid var(--accent-blue);">`;
           r.path.forEach(p => {
              html += `<div>↳ ${escapeHtml(p)}</div>`;
           });
@@ -775,13 +776,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       
-      let html = `<div class="response-query-tag" style="background: rgba(16, 185, 129, 0.1); color: #059669;">โหมด: การหารากศัพท์ (Etymological Bridge)</div>`;
+      let html = `<div class="response-query-tag" style="background: rgba(35, 101, 150, 0.1); color: var(--accent-blue);">โหมด: การหารากศัพท์ (Etymological Bridge)</div>`;
       
       if (data.found && data.entry) {
         const entry = data.entry;
-        html += `<div class="response-highlight-box" style="border-left-color: #10B981;">
+        html += `<div class="response-highlight-box" style="border-left-color: var(--accent-blue);">
           <p style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin-bottom: 0.3rem;">
-            ภาษาไทย: <span style="color: #2563EB;">${escapeHtml(entry.thai_word)}</span>
+            ภาษาไทย: <span style="color: var(--accent-blue);">${escapeHtml(entry.thai_word)}</span>
           </p>`;
         
         if (entry.sanskrit_word || entry.pali_word || entry.pali_sanskrit_form) {
@@ -795,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle cognates if they are objects
         if (entry.english_cognates && entry.english_cognates.length > 0) {
           const cogList = entry.english_cognates.map(c => typeof c === 'string' ? escapeHtml(c) : escapeHtml(c.word)).join(', ');
-          html += `<p><strong>English Cognates (คำร่วมเชื้อสาย):</strong> <span style="color: #2563EB; font-weight: 600;">${cogList}</span></p>`;
+          html += `<p><strong>English Cognates (คำร่วมเชื้อสาย):</strong> <span style="color: var(--accent-blue); font-weight: 600;">${cogList}</span></p>`;
         }
         
         html += `</div>`;
@@ -809,12 +810,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Timeline Tracing
         if (entry.timeline && entry.timeline.length > 0) {
            html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">วิวัฒนาการคำ (Timeline)</h4>`;
-           html += `<div style="margin-top: 10px; padding-left: 15px; border-left: 2px solid #10B981;">`;
+           html += `<div style="margin-top: 10px; padding-left: 15px; border-left: 2px solid var(--accent-blue);">`;
            entry.timeline.forEach(t => {
               html += `<div style="margin-bottom: 12px; position: relative;">`;
-              html += `<div style="position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #10B981;"></div>`;
+              html += `<div style="position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></div>`;
               html += `<strong style="color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(t.stage || '')} (${escapeHtml(t.era || '')})</strong><br>`;
-              html += `<span style="color: var(--accent-blue); font-family: monospace; font-size: 1.1rem;">${escapeHtml(t.form || '')}</span>`;
+              html += `<span style="color: var(--accent-blue); font-family: monospace; font-size: 1.1rem; font-weight: 600;">${escapeHtml(t.form || '')}</span>`;
               if (t.meaning) html += ` <span style="color: var(--text-secondary); font-size: 0.85rem;">— ${escapeHtml(t.meaning)}</span>`;
               html += `</div>`;
            });
@@ -826,10 +827,10 @@ document.addEventListener('DOMContentLoaded', () => {
            html += `<h4 style="margin-top: 20px; color: var(--text-secondary);">เส้นทางคำร่วมเชื้อสาย (Derivation Paths)</h4>`;
            html += `<ul style="list-style: none; padding: 0; margin-top: 10px;">`;
            entry.english_cognates.forEach(c => {
-             html += `<li style="padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; border-radius: 6px;">`;
-             html += `<strong style="color: var(--accent-blue); font-size: 1.05rem;">${escapeHtml(c.word)}</strong> <span style="font-size: 0.8rem; color: var(--text-tertiary);">(${escapeHtml(c.origin_language || '')})</span><br>`;
-             html += `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;"><strong>เส้นทาง:</strong> ${escapeHtml(c.derivation_path || '')}</div>`;
-             if (c.usage_note) html += `<div style="font-size: 0.85rem; color: #10B981; margin-top: 4px;"><strong>Note:</strong> ${escapeHtml(c.usage_note)}</div>`;
+             html += `<li class="cognate-card-item">`;
+             html += `<strong class="cognate-word">${escapeHtml(c.word)}</strong> <span class="cognate-lang">(${escapeHtml(c.origin_language || '')})</span><br>`;
+             html += `<div class="derivation-path"><strong>เส้นทาง:</strong> ${escapeHtml(c.derivation_path || '')}</div>`;
+             if (c.usage_note) html += `<div class="note-badge"><strong>Note:</strong> ${escapeHtml(c.usage_note)}</div>`;
              html += `</li>`;
            });
            html += `</ul>`;
@@ -837,12 +838,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add D3 Graph Container
         html += `<h4 style="margin-top: 30px; color: var(--text-secondary); text-align: center;">แผนภาพรากศัพท์ (Etymology Tree)</h4>`;
-        html += `<div style="position: relative; width: 100%; height: 500px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-top: 10px; overflow: hidden;">
-                   <svg id="d3GraphSvg" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>
+        html += `<div class="d3-graph-wrapper">
+                   <div class="d3-graph-toolbar">
+                     <span class="d3-graph-tip">คลิกโหนดเพื่อขยาย/ย่อ หรือลากเพื่อเลื่อนมุมมอง</span>
+                     <div class="d3-graph-actions">
+                       <button type="button" class="d3-btn" id="graphResetZoomBtn">รีเซ็ตมุมมอง</button>
+                       <button type="button" class="d3-btn" id="graphExpandAllBtn">ขยายทั้งหมด</button>
+                       <button type="button" class="d3-btn" id="graphCollapseAllBtn">ย่อทั้งหมด</button>
+                     </div>
+                   </div>
+                   <div id="treeBreadcrumb" class="tree-breadcrumb"></div>
+                   <div style="width: 100%; height: 500px; position: relative;">
+                     <svg id="d3GraphSvg" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"></svg>
+                   </div>
+                   <div id="selectedNodeCard" class="selected-node-card" style="display: none;">
+                     <div class="node-card-header">
+                       <h5 id="nodeDetailTitle" class="node-card-title"></h5>
+                       <span id="nodeDetailBadge" class="node-card-badge"></span>
+                       <span id="nodeDetailEra" class="node-card-era"></span>
+                     </div>
+                     <div id="nodeDetailBody" class="node-card-body"></div>
+                     <div id="nodeDetailTip" class="node-card-tip"></div>
+                   </div>
                  </div>`;
 
       } else {
-        html += `<div class="response-highlight-box" style="border-left-color: #10B981;">
+        html += `<div class="response-highlight-box" style="border-left-color: var(--accent-blue);">
           <p>ไม่พบข้อมูลรากศัพท์สำหรับ "${escapeHtml(query)}" ในฐานข้อมูล Etymological Bridge</p>
           <p style="font-size: 0.9rem; color: #64748B;">คำนี้อาจเป็นคำไทยแท้ (Kra-Dai) หรือไม่อยู่ในคลังคำสาธิต</p>
         </div>`;

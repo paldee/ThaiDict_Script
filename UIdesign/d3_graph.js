@@ -10,18 +10,18 @@ let currentRootData = null;
 let treeRoot = null;
 let activeWordEntry = null;
 
-// Branch color palette - warm, inviting, accessible
+// Branch color palette - Royal Society Light Theme (High Contrast & Legible)
 const TREE_COLORS = {
-  pie_root: { bg: "rgba(245, 158, 11, 0.15)", border: "#f59e0b", glow: "rgba(245, 158, 11, 0.4)", text: "#fbbf24" },
-  eastern: { bg: "rgba(16, 185, 129, 0.15)", border: "#10b981", glow: "rgba(16, 185, 129, 0.4)", text: "#34d399" },
-  indic: { bg: "rgba(56, 189, 248, 0.15)", border: "#38bdf8", glow: "rgba(56, 189, 248, 0.4)", text: "#7dd3fc" },
-  thai: { bg: "rgba(5, 150, 105, 0.25)", border: "#10b981", glow: "rgba(16, 185, 129, 0.5)", text: "#6ee7b7" },
-  western: { bg: "rgba(99, 102, 241, 0.15)", border: "#818cf8", glow: "rgba(99, 102, 241, 0.4)", text: "#a5b4fc" },
-  germanic: { bg: "rgba(14, 165, 233, 0.15)", border: "#0ea5e9", glow: "rgba(14, 165, 233, 0.4)", text: "#38bdf8" },
-  italic: { bg: "rgba(168, 85, 247, 0.15)", border: "#a855f7", glow: "rgba(168, 85, 247, 0.4)", text: "#c084fc" },
-  greek: { bg: "rgba(244, 63, 94, 0.15)", border: "#f43f5e", glow: "rgba(244, 63, 94, 0.4)", text: "#fb7185" },
-  english: { bg: "rgba(6, 182, 212, 0.2)", border: "#06b6d4", glow: "rgba(6, 182, 212, 0.45)", text: "#67e8f9" },
-  default: { bg: "rgba(100, 116, 139, 0.15)", border: "#64748b", glow: "rgba(100, 116, 139, 0.3)", text: "#94a3b8" }
+  pie_root: { bg: "#FEF3C7", border: "#D97706", badgeBg: "#D97706", badgeText: "#FFFFFF", text: "#92400E", line: "#D97706" },
+  eastern: { bg: "#ECFDF5", border: "#059669", badgeBg: "#059669", badgeText: "#FFFFFF", text: "#065F46", line: "#059669" },
+  indic: { bg: "#F0F9FF", border: "#0284C7", badgeBg: "#0284C7", badgeText: "#FFFFFF", text: "#0369A1", line: "#0284C7" },
+  thai: { bg: "#ECFDF5", border: "#047857", badgeBg: "#047857", badgeText: "#FFFFFF", text: "#064E3B", line: "#047857" },
+  western: { bg: "#EEF2FF", border: "#4F46E5", badgeBg: "#4F46E5", badgeText: "#FFFFFF", text: "#3730A3", line: "#4F46E5" },
+  germanic: { bg: "#F0F9FF", border: "#0284C7", badgeBg: "#0284C7", badgeText: "#FFFFFF", text: "#075985", line: "#0284C7" },
+  italic: { bg: "#FAF5FF", border: "#9333EA", badgeBg: "#9333EA", badgeText: "#FFFFFF", text: "#6B21A8", line: "#9333EA" },
+  greek: { bg: "#FFF1F2", border: "#E11D48", badgeBg: "#E11D48", badgeText: "#FFFFFF", text: "#9F1239", line: "#E11D48" },
+  english: { bg: "#F8FAFC", border: "#236596", badgeBg: "#236596", badgeText: "#FFFFFF", text: "#0F2942", line: "#236596" },
+  default: { bg: "#F8FAFC", border: "#64748B", badgeBg: "#64748B", badgeText: "#FFFFFF", text: "#1E293B", line: "#64748B" }
 };
 
 function initD3Graph() {
@@ -34,7 +34,7 @@ function initD3Graph() {
   // Define SVG Gradients and Filters
   const defs = treeSvg.append("defs");
 
-  // Subtle Drop Shadow Filter
+  // Subtle Drop Shadow Filter for Light Mode
   const filter = defs.append("filter")
     .attr("id", "cardShadow")
     .attr("x", "-20%")
@@ -43,10 +43,10 @@ function initD3Graph() {
     .attr("height", "140%");
   filter.append("feDropShadow")
     .attr("dx", 0)
-    .attr("dy", 4)
-    .attr("stdDeviation", 6)
-    .attr("flood-color", "#000000")
-    .attr("flood-opacity", 0.5);
+    .attr("dy", 3)
+    .attr("stdDeviation", 5)
+    .attr("flood-color", "#0F2942")
+    .attr("flood-opacity", 0.08);
 
   // Setup Zoom & Pan Container
   treeG = treeSvg.append("g").attr("class", "tree-main-group");
@@ -108,7 +108,7 @@ function buildTreeHierarchy(entry, graphData) {
       id: `cog_${i}_${cog.word}`,
       name: cog.word,
       type: "english_leaf",
-      icon: "🇬🇧",
+      icon: "EN",
       badge: cog.difficulty || "General",
       detail: cog.origin_language || "English",
       subDetail: cog.derivation_path || "",
@@ -119,13 +119,13 @@ function buildTreeHierarchy(entry, graphData) {
     };
 
     if (orig.includes("greek") || orig.includes("hellenic")) {
-      item.icon = "📜";
+      item.icon = "GRC";
       greekCogs.push(item);
     } else if (orig.includes("latin") || orig.includes("french") || orig.includes("italic") || orig.includes("romance")) {
-      item.icon = "🏛️";
+      item.icon = "LAT";
       latinCogs.push(item);
     } else if (orig.includes("german") || orig.includes("old english") || orig.includes("norse")) {
-      item.icon = "🛡️";
+      item.icon = "GER";
       germanicCogs.push(item);
     } else {
       otherCogs.push(item);
@@ -138,7 +138,7 @@ function buildTreeHierarchy(entry, graphData) {
       id: "branch_germanic",
       name: "สายเจอร์แมนิก (Germanic)",
       type: "branch",
-      icon: "🛡️",
+      icon: "GER",
       badge: `${germanicCogs.length} คำ`,
       detail: "สายตระกูลภาษาอังกฤษพื้นถิ่น",
       era: "~500 BCE",
@@ -152,7 +152,7 @@ function buildTreeHierarchy(entry, graphData) {
       id: "branch_italic",
       name: "สายอิตาลิก / ละติน (Italic/Latin)",
       type: "branch",
-      icon: "🏛️",
+      icon: "LAT",
       badge: `${latinCogs.length} คำ`,
       detail: "สายคำศัพท์วิชาการและการศึกษา",
       era: "~750 BCE",
@@ -166,7 +166,7 @@ function buildTreeHierarchy(entry, graphData) {
       id: "branch_greek",
       name: "สายเฮลเลนิก / กรีก (Hellenic/Greek)",
       type: "branch",
-      icon: "📜",
+      icon: "GRC",
       badge: `${greekCogs.length} คำ`,
       detail: "สายปรัชญาและศัพท์เฉพาะทาง",
       era: "~800 BCE",
@@ -180,7 +180,7 @@ function buildTreeHierarchy(entry, graphData) {
       id: "branch_other",
       name: "สายร่วมอื่น ๆ (Other Branches)",
       type: "branch",
-      icon: "🌐",
+      icon: "EUR",
       badge: `${otherCogs.length} คำ`,
       detail: "คำร่วมตระกูลอินโด-ยูโรเปียน",
       era: "ประวัติศาสตร์สากล",
@@ -194,7 +194,7 @@ function buildTreeHierarchy(entry, graphData) {
     id: "branch_eastern",
     name: "สายตะวันออก (อินโด-อารยัน)",
     type: "branch",
-    icon: "🌿",
+    icon: "SAN",
     badge: "สู่ภาษาไทย",
     detail: "สายสัทศาสตร์ Satem ทางเอเชียใต้",
     era: "~2000 BCE",
@@ -204,7 +204,7 @@ function buildTreeHierarchy(entry, graphData) {
         id: "node_indic",
         name: indicWord,
         type: "intermediate_lang",
-        icon: "🇮🇳",
+        icon: "IND",
         badge: entry.pali_sanskrit_lang || "สันสกฤต/บาลี",
         detail: `ความหมายเดิม: "${indicMeaning}"`,
         subDetail: "ภาษาคัมภีร์พระเวทและพุทธศาสนา",
@@ -215,7 +215,7 @@ function buildTreeHierarchy(entry, graphData) {
             id: "node_thai",
             name: thaiWord,
             type: "thai_leaf",
-            icon: "🇹🇭",
+            icon: "TH",
             badge: `${thaiPos} คำยืม`,
             detail: `${thaiRead} ${thaiPos}`,
             subDetail: thaiDef ? (thaiDef.length > 45 ? thaiDef.slice(0, 45) + "..." : thaiDef) : "พจนานุกรมราชบัณฑิตยสภา",
@@ -232,7 +232,7 @@ function buildTreeHierarchy(entry, graphData) {
     id: "branch_western",
     name: "สายตะวันตก (ยุโรป/อังกฤษ)",
     type: "branch",
-    icon: "🌍",
+    icon: "EUR",
     badge: `${(entry.english_cognates || []).length} คำร่วมสาย`,
     detail: "สายสัทศาสตร์ Centum ทางยุโรป",
     era: "~1000 BCE",
@@ -245,7 +245,7 @@ function buildTreeHierarchy(entry, graphData) {
     id: "pie_root",
     name: pieWord,
     type: "pie_root",
-    icon: "🌐",
+    icon: "PIE",
     badge: "รากบรรพบุรุษร่วม (PIE)",
     detail: `ความหมาย: "${pieMeaning}"`,
     subDetail: "ทุ่งหญ้าสเตปป์ยูเรเซียโบราณ",
@@ -371,19 +371,19 @@ function updateTree(source) {
     .attr("width", cardWidth)
     .attr("height", cardHeight)
     .attr("y", -cardHeight / 2)
-    .attr("rx", 12)
+    .attr("rx", 10)
     .attr("filter", "url(#cardShadow)")
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).bg)
     .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
-    .attr("stroke-width", 1.6);
+    .attr("stroke-width", 1.5);
 
   // Card Left Accent Stripe
   nodeEnter.append("rect")
     .attr("class", "card-accent-bar")
     .attr("width", 5)
-    .attr("height", cardHeight - 16)
+    .attr("height", cardHeight - 14)
     .attr("x", 4)
-    .attr("y", -(cardHeight - 16) / 2)
+    .attr("y", -(cardHeight - 14) / 2)
     .attr("rx", 3)
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border);
 
@@ -391,26 +391,29 @@ function updateTree(source) {
   nodeEnter.append("circle")
     .attr("cx", 26)
     .attr("cy", 0)
-    .attr("r", 14)
-    .attr("fill", "rgba(0, 0, 0, 0.45)")
+    .attr("r", 13)
+    .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).badgeBg)
     .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
     .attr("stroke-width", 1.2);
 
-  // Icon Text (Flag or Symbol)
+  // Icon Text (Language Code Tag)
   nodeEnter.append("text")
     .attr("class", "card-icon")
     .attr("x", 26)
-    .attr("y", 5)
+    .attr("y", 4)
     .attr("text-anchor", "middle")
-    .attr("font-size", "14px")
-    .text(d => d.data.icon || "•");
+    .attr("font-family", "'Sarabun', 'Krub', sans-serif")
+    .attr("font-size", "10px")
+    .attr("font-weight", "700")
+    .attr("fill", "#FFFFFF")
+    .text(d => d.data.icon || "");
 
   // Main Word / Name Text
   nodeEnter.append("text")
     .attr("class", "card-title")
     .attr("x", 48)
     .attr("y", -8)
-    .attr("font-family", "Outfit, Prompt, sans-serif")
+    .attr("font-family", "'Sarabun', 'Krub', sans-serif")
     .attr("font-size", d => d.data.type === "pie_root" ? "14px" : "13px")
     .attr("font-weight", "700")
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).text)
@@ -423,10 +426,10 @@ function updateTree(source) {
   nodeEnter.append("text")
     .attr("class", "card-detail")
     .attr("x", 48)
-    .attr("y", 11)
-    .attr("font-family", "Prompt, sans-serif")
+    .attr("y", 10)
+    .attr("font-family", "'Sarabun', 'Krub', sans-serif")
     .attr("font-size", "10px")
-    .attr("fill", "rgba(255, 255, 255, 0.7)")
+    .attr("fill", "#334E68")
     .text(d => {
       const txt = d.data.detail || d.data.era || "";
       return txt.length > 22 ? txt.slice(0, 20) + "..." : txt;
@@ -436,11 +439,11 @@ function updateTree(source) {
   nodeEnter.append("text")
     .attr("class", "card-era")
     .attr("x", 48)
-    .attr("y", 23)
-    .attr("font-family", "Prompt, sans-serif")
+    .attr("y", 22)
+    .attr("font-family", "'Sarabun', 'Krub', sans-serif")
     .attr("font-size", "9px")
-    .attr("fill", "rgba(255, 255, 255, 0.45)")
-    .text(d => d.data.era ? `⏳ ${d.data.era}` : "");
+    .attr("fill", "#64748B")
+    .text(d => d.data.era || "");
 
   // Expand / Collapse Pill Indicator (at the right edge of cards with children)
   const toggleGroup = nodeEnter.append("g")
@@ -450,17 +453,18 @@ function updateTree(source) {
   toggleGroup.append("circle")
     .attr("class", "toggle-circle")
     .attr("r", 9)
-    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "rgba(30, 41, 59, 0.8)")
+    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "#FFFFFF")
     .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
-    .attr("stroke-width", 1.2);
+    .attr("stroke-width", 1.4);
 
   toggleGroup.append("text")
     .attr("class", "toggle-symbol")
     .attr("text-anchor", "middle")
     .attr("dy", 3.5)
+    .attr("font-family", "'Sarabun', 'Krub', sans-serif")
     .attr("font-size", "11px")
     .attr("font-weight", "700")
-    .attr("fill", d => d._children ? "#000" : "#fff")
+    .attr("fill", d => d._children ? "#FFFFFF" : "#0F2942")
     .text(d => (d.children || d._children) ? (d._children ? "+" : "−") : "");
 
   // Hide toggle on leaf nodes (no children or _children)
@@ -473,13 +477,13 @@ function updateTree(source) {
   nodeUpdate.select(".card-bg")
     .attr("fill", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).bg)
     .attr("stroke", d => (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border)
-    .attr("stroke-width", d => (d.data.id === activeWordEntry?.thai_word ? 2.5 : 1.6));
+    .attr("stroke-width", d => (d.data.id === activeWordEntry?.thai_word ? 2.5 : 1.5));
 
   nodeUpdate.select(".toggle-circle")
-    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "rgba(30, 41, 59, 0.8)");
+    .attr("fill", d => d._children ? (TREE_COLORS[d.data.styleKey] || TREE_COLORS.default).border : "#FFFFFF");
 
   nodeUpdate.select(".toggle-symbol")
-    .attr("fill", d => d._children ? "#000" : "#fff")
+    .attr("fill", d => d._children ? "#FFFFFF" : "#0F2942")
     .text(d => (d.children || d._children) ? (d._children ? "+" : "−") : "");
 
   // Transition exiting nodes to the parent's new position
@@ -569,7 +573,7 @@ function selectNodeDetails(data) {
   const bodyEl = document.getElementById("nodeDetailBody");
   const tipEl = document.getElementById("nodeDetailTip");
 
-  if (titleEl) titleEl.innerHTML = `${data.icon || '📌'} ${data.name}`;
+  if (titleEl) titleEl.innerHTML = data.name;
   if (badgeEl) {
     badgeEl.innerText = data.badge || data.type || "ภาษาศาสตร์";
     badgeEl.style.color = style.text;
@@ -582,19 +586,19 @@ function selectNodeDetails(data) {
 
   if (data.type === "pie_root") {
     explanation = `<strong>รากภาษาบรรพบุรุษอินโด-ยูโรเปียน (PIE)</strong> คือต้นกำเนิดของภาษากว่า 400 ภาษาในโลก ทั้งในยุโรป อิหร่าน และอินเดีย โดยมีอายุเก่าแก่กว่า 6,000 ปี`;
-    mnemonic = `💡 ความหมายดั้งเดิมคือ "${data.detail}" ซึ่งแตกสาขาออกไปเป็นทั้งคำไทย (ผ่านบาลี-สันสกฤต) และคำอังกฤษ!`;
+    mnemonic = `ความหมายดั้งเดิมคือ "${data.detail}" ซึ่งแตกสาขาออกไปเป็นทั้งคำไทย (ผ่านบาลี-สันสกฤต) และคำอังกฤษ`;
   } else if (data.type === "thai_leaf") {
     explanation = `<strong>คำในภาษาไทย:</strong> ${data.subDetail || data.detail}<br>เป็นคำที่เรารู้จักและใช้ในชีวิตประจำวัน โดยรับถ่ายทอดผ่านพระพุทธศาสนาและวรรณคดีอินเดียโบราณ`;
-    mnemonic = `✨ คำไทยคำนี้มี "ญาติทางภาษา" ซ่อนอยู่ในภาษาอังกฤษเพียบ ลองคลิกดูสายเจอร์แมนิกและละติน!`;
+    mnemonic = `คำไทยคำนี้มีคำร่วมเชื้อสายซ่อนอยู่ในภาษาอังกฤษ ลองคลิกดูสายเจอร์แมนิกและละติน`;
   } else if (data.type === "intermediate_lang") {
     explanation = `<strong>ภาษาสันสกฤต/บาลี (Indic):</strong> ภาษาศักดิ์สิทธิ์โบราณแห่งลุ่มแม่น้ำสินทุ ${data.detail}`;
-    mnemonic = `🏛️ คำสันสกฤตนี้คือ "สะพานเชื่อมคนสำคัญ" ที่ส่งคำต่อไปยังภาษาไทยในยุคสุโขทัยและอยุธยา`;
+    mnemonic = `คำสันสกฤตนี้คือสะพานเชื่อมสำคัญที่ส่งคำต่อไปยังภาษาไทยในยุคสุโขทัยและอยุธยา`;
   } else if (data.type === "english_leaf") {
     explanation = `<strong>คำภาษาอังกฤษ:</strong> ${data.detail} (${data.era})<br>วิวัฒนาการ: ${data.subDetail || 'สืบทอดตามสายอินโด-ยูโรเปียน'}`;
-    mnemonic = `🎯 <strong>เทคนิคช่วยจำ (Mnemonic):</strong> ${data.note || 'มีความหมายและรากศัพท์ร่วมกันกับคำไทย'}`;
+    mnemonic = `<strong>เทคนิคช่วยจำ (Mnemonic):</strong> ${data.note || 'มีความหมายและรากศัพท์ร่วมกันกับคำไทย'}`;
   } else {
     explanation = `<strong>${data.name}:</strong> ${data.detail || 'สาขาตระกูลภาษาที่แยกตัวตามการอพยพของผู้คนในยุคโบราณ'}`;
-    mnemonic = `🔍 มีคำศัพท์ในกิ่งนี้ ${data.badge || ''} คลิกที่เครื่องหมาย [+] เพื่อเปิดดู`;
+    mnemonic = `มีคำศัพท์ในกิ่งนี้ ${data.badge || ''} คลิกที่เครื่องหมาย [+] เพื่อเปิดดู`;
   }
 
   if (bodyEl) bodyEl.innerHTML = explanation;
@@ -664,11 +668,11 @@ function toggleGraphicOrCardView() {
   if (isGraphicView) {
     if (treeCard) treeCard.style.display = "block";
     if (flowCard) flowCard.style.display = "none";
-    if (btn) btn.innerText = "📋 ดูแบบการ์ดลำดับชั้น";
+    if (btn) btn.innerText = "ดูแบบการ์ดลำดับชั้น";
   } else {
     if (treeCard) treeCard.style.display = "none";
     if (flowCard) flowCard.style.display = "block";
-    if (btn) btn.innerText = "🌿 ดูแบบผังต้นไม้กราฟิก";
+    if (btn) btn.innerText = "ดูแบบผังต้นไม้กราฟิก";
   }
 }
 
@@ -686,7 +690,7 @@ function renderCascadingCardView(rootData) {
     <!-- Root PIE Card -->
     <div class="cascade-root-card">
       <div class="cascade-header">
-        <span class="cascade-icon">🌐</span>
+        <span class="cascade-icon">PIE</span>
         <div>
           <span class="cascade-tag">รากบรรพบุรุษร่วม (PIE Root)</span>
           <h3 class="cascade-title">${rootData.name}</h3>
@@ -700,7 +704,7 @@ function renderCascadingCardView(rootData) {
       <!-- Eastern Branch: Towards Thai -->
       <div class="cascade-branch-col eastern-col">
         <div class="branch-col-header">
-          <span class="col-icon">🌿</span>
+          <span class="col-icon">SAN</span>
           <div>
             <h4 class="col-title">${eastern?.name || 'สายตะวันออก'}</h4>
             <span class="col-subtitle">${eastern?.detail || 'สายอินโด-อารยัน สู่ภาษาไทย'}</span>
@@ -710,14 +714,14 @@ function renderCascadingCardView(rootData) {
         <div class="branch-cards-stack">
           ${(eastern?.children || []).map(indic => `
             <div class="cascade-step-card">
-              <div class="step-tag indic-tag">🇮🇳 ${indic.badge} (${indic.era})</div>
+              <div class="step-tag indic-tag">IND: ${indic.badge} (${indic.era})</div>
               <div class="step-word">${indic.name}</div>
               <div class="step-sub">${indic.detail}</div>
-              <div class="step-arrow">⬇ ถ่ายทอดสู่ภาษาไทย</div>
+              <div class="step-arrow">➔ ถ่ายทอดสู่ภาษาไทย</div>
               
               ${(indic.children || []).map(th => `
                 <div class="cascade-target-card thai-target">
-                  <div class="target-tag">🇹🇭 ภาษาไทย (${th.era})</div>
+                  <div class="target-tag">TH: ภาษาไทย (${th.era})</div>
                   <div class="target-word">${th.name} <span class="target-phonetic">${th.detail}</span></div>
                   <p class="target-def">${th.subDetail}</p>
                 </div>
@@ -730,7 +734,7 @@ function renderCascadingCardView(rootData) {
       <!-- Western Branch: Towards English -->
       <div class="cascade-branch-col western-col">
         <div class="branch-col-header">
-          <span class="col-icon">🌍</span>
+          <span class="col-icon">EUR</span>
           <div>
             <h4 class="col-title">${western?.name || 'สายตะวันตก'}</h4>
             <span class="col-subtitle">${western?.badge || 'สายยุโรป สู่ภาษาอังกฤษ'}</span>
@@ -749,11 +753,11 @@ function renderCascadingCardView(rootData) {
                 ${(sub.children || []).map(en => `
                   <div class="en-cognate-pill-card" onclick="selectNodeDetails(${JSON.stringify(en).replace(/"/g, '&quot;')})">
                     <div class="en-pill-top">
-                      <span class="en-pill-word">🇬🇧 ${en.name}</span>
+                      <span class="en-pill-word">${en.name}</span>
                       <span class="en-pill-diff">${en.badge}</span>
                     </div>
                     <div class="en-pill-origin">${en.detail}</div>
-                    <div class="en-pill-note">💡 ${en.note || en.subDetail}</div>
+                    <div class="en-pill-note">${en.note || en.subDetail}</div>
                   </div>
                 `).join('')}
               </div>

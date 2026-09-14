@@ -6,15 +6,10 @@
   <title>Kinetic Typography & Liquid Glass UI</title>
   <meta name="description" content="ระบบ Kinetic Typography และ Liquid Glass สไตล์โมเดิร์น มินิมอล ผสานฟอร์มตัวอักษรไทย">
 
-  <!-- Google Fonts: 
-       - Sarabun (มีหัว หนา ชัด สำหรับประโยคหลักที่เรียงตัวแล้ว)
-       - Krub (มีหัว โมเดิร์น)
-       - Prompt (ไร้หัว สำหรับ Input & UI)
-       - Outfit (เลขอังกฤษและไอคอน)
-  -->
+  <!-- Google Fonts: Sarabun & Krub (ฟอนต์ไทยมีหัว คมชัด อ่านง่าย สไตล์ราชบัณฑิตยสภา) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Krub:wght@600;700;800&family=Outfit:wght@400;500;600;700&family=Prompt:wght@300;400;500;600&family=Sarabun:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Krub:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -151,7 +146,10 @@
           <!-- ก้อนที่ 1: ค้นหาทั่วไป (General Search via WACHA) -->
           <button class="mode-card" id="modeCardGeneral" data-mode="general">
             <div class="mode-card-icon-box dict-icon">
-              <span class="mode-icon">📖</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
             </div>
             <div class="mode-card-info">
               <div class="mode-title-row">
@@ -170,7 +168,13 @@
           <!-- ก้อนที่ 2: การหารากศัพท์ (Etymological Bridge) -->
           <button class="mode-card" id="modeCardEtymology" data-mode="etymology">
             <div class="mode-card-icon-box root-icon">
-              <span class="mode-icon">🌿</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
             </div>
             <div class="mode-card-info">
               <div class="mode-title-row">
@@ -192,16 +196,16 @@
       <div class="suggestion-tray" id="suggestionTray">
         <span class="tray-title">ไอเดียเริ่มต้น:</span>
         <button class="pill-chip" data-query="รากศัพท์คำว่า 'มารดา' และ 'วิทยา'">
-          <span class="pill-icon">🌱</span> รากศัพท์คำว่า "มารดา"
+          รากศัพท์คำว่า "มารดา"
         </button>
         <button class="pill-chip" data-query="คำไทยที่ยืมมาจากสันสกฤตมีอะไรบ้าง">
-          <span class="pill-icon">📜</span> คำยืมสันสกฤต
+          คำยืมสันสกฤต
         </button>
         <button class="pill-chip" data-query="ความเชื่อมโยงคำว่า 'ทันต' สู่คำว่า Dental">
-          <span class="pill-icon">🦷</span> คำร่วมสาย PIE (ทันต ↔ Dental)
+          คำร่วมสาย PIE (ทันต ↔ Dental)
         </button>
         <button class="pill-chip" data-query="แนะนำคำภาษาไทยที่มีความหมายลึกซึ้ง">
-          <span class="pill-icon">✨</span> หาคำที่มีความหมายลึกซึ้ง
+          หาคำที่มีความหมายลึกซึ้ง
         </button>
       </div>
     </div>
